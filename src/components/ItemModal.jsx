@@ -1,19 +1,17 @@
 import React, { useState } from 'react';
 import { useCatalog } from '../context/CatalogContext';
 import { THREAT_LEVELS } from '../data/defaultData';
+import { createDirectItemWhatsAppUrl } from '../utils/whatsappHelper';
 import { 
   X, 
   ShoppingCart, 
   Send, 
   Truck, 
-  Check, 
-  Copy, 
   ShieldCheck 
 } from 'lucide-react';
 
 export function ItemModal({ item, onClose, onOpenCart }) {
   const { merchantProfile, addToCart, playSound } = useCatalog();
-  const [copied, setCopied] = useState(false);
 
   if (!item) return null;
 
@@ -44,15 +42,8 @@ export function ItemModal({ item, onClose, onOpenCart }) {
 
   const handleDirectWhatsApp = () => {
     playSound('beep');
-    const waNumber = (merchantProfile.whatsapp || '').replace(/[^0-9]/g, '');
-    const message = encodeURIComponent(
-      `Halo Faust Store,\nSaya mau order item ini:\n\n` +
-      `📦 Item: ${item.name}\n` +
-      `🎮 Game: ${item.game}\n` +
-      `💰 Harga: ${formatPrice(item.price, item.currency)}\n\n` +
-      `Apakah masih ready? Mohon info pembayaran & prosesnya ya!`
-    );
-    window.open(`https://wa.me/${waNumber}?text=${message}`, '_blank');
+    const waUrl = createDirectItemWhatsAppUrl(merchantProfile.whatsapp, item);
+    window.open(waUrl, '_blank');
   };
 
   return (

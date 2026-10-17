@@ -1,16 +1,17 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useCatalog } from '../context/CatalogContext';
+import { useAuth } from '../context/AuthContext';
 import { 
   ShieldAlert, 
   ShoppingCart, 
-  Settings, 
+  Lock, 
   Volume2, 
   VolumeX, 
-  Flame,
-  Inbox
+  LayoutDashboard
 } from 'lucide-react';
 
-export function Header({ onOpenCart, onOpenAdmin, isCuratorMode }) {
+export function Header({ onOpenCart }) {
   const { 
     merchantProfile, 
     cart, 
@@ -20,8 +21,20 @@ export function Header({ onOpenCart, onOpenAdmin, isCuratorMode }) {
     playSound 
   } = useCatalog();
 
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+
   const totalCartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
   const pendingOrdersCount = orders.filter(o => o.status === 'Pending').length;
+
+  const handleAdminClick = () => {
+    playSound('beep');
+    if (isAuthenticated) {
+      navigate('/admin/dashboard');
+    } else {
+      navigate('/admin/login');
+    }
+  };
 
   return (
     <header style={{
@@ -49,7 +62,7 @@ export function Header({ onOpenCart, onOpenAdmin, isCuratorMode }) {
         {/* Brand / Logo */}
         <div 
           style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}
-          onClick={() => playSound('glitch')}
+          onClick={() => { playSound('glitch'); navigate('/'); }}
         >
           <div style={{
             position: 'relative',
@@ -117,36 +130,45 @@ export function Header({ onOpenCart, onOpenAdmin, isCuratorMode }) {
             {soundEnabled ? <Volume2 size={16} /> : <VolumeX size={16} />}
           </button>
 
-          {/* Admin Panel Button */}
+          {/* Discreet Admin Lock Button */}
           <button
-            onClick={() => {
-              playSound('beep');
-              onOpenAdmin();
-            }}
+            onClick={handleAdminClick}
             className="btn btn-sm"
             style={{
               borderColor: 'var(--border-color)',
               background: 'var(--bg-secondary)',
-              position: 'relative'
+              position: 'relative',
+              padding: '7px 12px'
             }}
-            title="Kelola Barang, Kategori, & Pesanan Masuk"
+            title={isAuthenticated ? "Buka Dashboard Admin" : "Akses Admin (Login Diperlukan)"}
           >
-            <Settings size={15} color="var(--accent-secondary)" />
-            <span className="mono" style={{ fontSize: '0.78rem' }}>
-              PANEL ADMIN
-            </span>
-            {pendingOrdersCount > 0 && (
-              <span style={{
-                background: '#ff2a44',
-                color: '#fff',
-                borderRadius: '10px',
-                padding: '1px 6px',
-                fontSize: '0.65rem',
-                fontWeight: 800,
-                marginLeft: '4px'
-              }}>
-                {pendingOrdersCount}
-              </span>
+            {isAuthenticated ? (
+              <>
+                <LayoutDashboard size={14} color="var(--accent-secondary)" />
+                <span className="mono" style={{ fontSize: '0.76rem', color: 'var(--accent-secondary)' }}>
+                  DASHBOARD
+                </span>
+                {pendingOrdersCount > 0 && (
+                  <span style={{
+                    background: '#ff2a44',
+                    color: '#fff',
+                    borderRadius: '10px',
+                    padding: '1px 6px',
+                    fontSize: '0.65rem',
+                    fontWeight: 800,
+                    marginLeft: '2px'
+                  }}>
+                    {pendingOrdersCount}
+                  </span>
+                )}
+              </>
+            ) : (
+              <>
+                <Lock size={13} color="var(--text-muted)" />
+                <span className="mono" style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>
+                  ADMIN
+                </span>
+              </>
             )}
           </button>
 

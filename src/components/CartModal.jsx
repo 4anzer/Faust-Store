@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useCatalog } from '../context/CatalogContext';
+import { createCartCheckoutWhatsAppUrl } from '../utils/whatsappHelper';
 import { 
   X, 
   Trash2, 
@@ -67,34 +68,9 @@ export function CartModal({ onClose }) {
 
       setOrderSuccess(newOrder);
 
-      // 2. Prepare WhatsApp message
-      const itemListText = cart
-        .map(
-          (i, idx) =>
-            `${idx + 1}. ${i.name} [${i.game}] (${i.quantity}x) - ${formatPrice(i.price * i.quantity, i.currency)}`
-        )
-        .join('\n');
-
-      const waMessage = encodeURIComponent(
-        `═════════════════════════════════\n` +
-        `🛒 PESANAN BARU - FAUST STORE\n` +
-        `No. Order: #${newOrder.id}\n` +
-        `═════════════════════════════════\n` +
-        `👤 Pembeli: ${buyerName.trim()}\n` +
-        `📱 Kontak: ${buyerContact.trim()}\n` +
-        `💳 Pembayaran: ${selectedPayment}\n` +
-        `📝 Catatan: ${notes.trim() || '-'}\n\n` +
-        `📦 DAFTAR BARANG:\n` +
-        `${itemListText}\n\n` +
-        `💰 TOTAL: ${formatPrice(totalPrice, 'Rp')}\n` +
-        `═════════════════════════════════\n` +
-        `Halo Admin Faust Store, saya sudah submit order di website. Mohon info nomor rekening / QRIS dan proses pengirimannya ya!`
-      );
-
-      const waNumber = (merchantProfile.whatsapp || '').replace(/[^0-9]/g, '');
-      if (waNumber) {
-        window.open(`https://wa.me/${waNumber}?text=${waMessage}`, '_blank');
-      }
+      // 2. Open WhatsApp with dynamic checkout template
+      const waUrl = createCartCheckoutWhatsAppUrl(merchantProfile.whatsapp, newOrder);
+      window.open(waUrl, '_blank');
 
     } catch (err) {
       console.error(err);
@@ -170,7 +146,7 @@ export function CartModal({ onClose }) {
                 Kode Order: #{orderSuccess.id}
               </p>
               <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', maxWidth: '480px', margin: '0 auto 20px auto', lineHeight: '1.5' }}>
-                Pesanan kamu sudah masuk ke daftar antrean admin dan notifikasi otomatis sudah dikirimkan. WhatsApp juga telah terbuka untuk konfirmasi langsung dengan penjual.
+                Pesanan kamu sudah masuk ke daftar antrean admin dan notifikasi otomatis sudah dikirimkan ke Discord. WhatsApp juga telah terbuka untuk konfirmasi transfer dengan admin!
               </p>
 
               <button
