@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useCatalog } from '../context/CatalogContext';
 import { 
   ShieldAlert, 
@@ -6,45 +6,35 @@ import {
   Settings, 
   Volume2, 
   VolumeX, 
-  Flame, 
-  BookOpen, 
-  Eye, 
-  FileText,
-  Clock
+  Flame,
+  Inbox
 } from 'lucide-react';
 
-export function Header({ onOpenCart, onOpenAdmin, isCuratorMode, setIsCuratorMode }) {
+export function Header({ onOpenCart, onOpenAdmin, isCuratorMode }) {
   const { 
     merchantProfile, 
     cart, 
-    theme, 
-    changeTheme, 
+    orders,
     soundEnabled, 
     toggleSound, 
     playSound 
   } = useCatalog();
 
   const totalCartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
-
-  const themeList = [
-    { id: 'limbus', name: 'Limbus Co.', icon: Flame, color: '#ff2a44', desc: 'Mephistopheles / Golden Bough' },
-    { id: 'lobotomy', name: 'Lobotomy Corp.', icon: Eye, color: '#f5c518', desc: 'Enkephalin Hazard' },
-    { id: 'ruina', name: 'Library of Ruina', icon: BookOpen, color: '#00f0ff', desc: 'Book of Light' },
-    { id: 'scp', name: 'SCP Foundation', icon: FileText, color: '#e63946', desc: 'Secure Contain Protect' }
-  ];
+  const pendingOrdersCount = orders.filter(o => o.status === 'Pending').length;
 
   return (
     <header style={{
       position: 'sticky',
       top: 0,
       zIndex: 500,
-      background: 'var(--header-bg)',
+      background: 'rgba(13, 11, 17, 0.94)',
       borderBottom: '1px solid var(--border-color)',
       backdropFilter: 'blur(10px)',
       boxShadow: '0 4px 20px rgba(0,0,0,0.6)'
     }}>
       {/* Top Hazard Caution Stripe */}
-      <div className="hazard-stripe" style={{ height: '4px', width: '100%' }} />
+      <div className="hazard-stripe" style={{ height: '3px', width: '100%' }} />
 
       <div style={{
         maxWidth: '1350px',
@@ -56,117 +46,78 @@ export function Header({ onOpenCart, onOpenAdmin, isCuratorMode, setIsCuratorMod
         flexWrap: 'wrap',
         gap: '12px'
       }}>
-        {/* Brand / Store Logo */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '14px', cursor: 'pointer' }}
-             onClick={() => playSound('glitch')}>
+        {/* Brand / Logo */}
+        <div 
+          style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}
+          onClick={() => playSound('glitch')}
+        >
           <div style={{
             position: 'relative',
-            width: '42px',
-            height: '42px',
+            width: '40px',
+            height: '40px',
             borderRadius: '50%',
             background: 'var(--bg-tertiary)',
             border: '2px solid var(--accent-primary)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 0 14px var(--accent-glow)'
+            boxShadow: '0 0 12px var(--accent-glow)'
           }}>
             <ShieldAlert size={22} color="var(--accent-primary)" />
             <div style={{
               position: 'absolute',
               bottom: '-2px',
               right: '-2px',
-              width: '12px',
-              height: '12px',
+              width: '10px',
+              height: '10px',
               borderRadius: '50%',
               background: '#10b981',
               border: '2px solid var(--bg-primary)'
-            }} title="Containment Active" />
+            }} title="Online" />
           </div>
 
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span className="serif-title glitch-hover" style={{
-                fontSize: '1.25rem',
+              <span className="serif-title" style={{
+                fontSize: '1.3rem',
                 fontWeight: 900,
                 color: 'var(--text-main)',
-                letterSpacing: '0.08em'
+                letterSpacing: '0.04em'
               }}>
-                {merchantProfile.shopName || "THE REQUISITION WING"}
+                {merchantProfile.shopName || "Faust Store"}
               </span>
-              <span className="badge mono" style={{
-                background: 'var(--border-color)',
+              <span className="badge" style={{
+                background: 'rgba(255, 42, 68, 0.15)',
                 color: 'var(--accent-primary)',
-                fontSize: '0.65rem',
-                border: '1px solid var(--accent-primary)'
+                border: '1px solid var(--accent-primary)',
+                fontSize: '0.68rem'
               }}>
-                CLEARANCE LV.5
+                OFFICIAL
               </span>
             </div>
             <p className="mono" style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>
-              {merchantProfile.subtitle || "Abnormality & In-Game Items Requisition Vault"}
+              {merchantProfile.subtitle || "Toko Item & Jasa In-Game Terpercaya"}
             </p>
           </div>
         </div>
 
-        {/* Action Controls & Theme Selector */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+        {/* Action Controls */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           
-          {/* Theme Selector Pills */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            background: 'var(--bg-tertiary)',
-            padding: '3px',
-            borderRadius: '4px',
-            border: '1px solid var(--border-color)'
-          }}>
-            {themeList.map((t) => {
-              const Icon = t.icon;
-              const isActive = theme === t.id;
-              return (
-                <button
-                  key={t.id}
-                  onClick={() => changeTheme(t.id)}
-                  title={t.desc}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '5px',
-                    padding: '4px 8px',
-                    background: isActive ? 'var(--bg-card)' : 'transparent',
-                    border: isActive ? `1px solid ${t.color}` : '1px solid transparent',
-                    color: isActive ? t.color : 'var(--text-muted)',
-                    borderRadius: '2px',
-                    cursor: 'pointer',
-                    fontSize: '0.72rem',
-                    fontFamily: 'var(--font-mono)',
-                    fontWeight: isActive ? 700 : 500,
-                    transition: 'all 0.15s ease',
-                    boxShadow: isActive ? `0 0 8px ${t.color}40` : 'none'
-                  }}
-                >
-                  <Icon size={12} />
-                  <span className="theme-text-label">{t.name}</span>
-                </button>
-              );
-            })}
-          </div>
-
           {/* Sound FX Toggle */}
           <button
             onClick={toggleSound}
             className="btn btn-sm"
-            title={soundEnabled ? "Mute Terminal Audio" : "Aktifkan Audio SFX"}
+            title={soundEnabled ? "Mute Suara Efek" : "Aktifkan Suara Efek"}
             style={{
-              padding: '6px 10px',
+              padding: '7px 10px',
               color: soundEnabled ? 'var(--accent-primary)' : 'var(--text-muted)'
             }}
           >
             {soundEnabled ? <Volume2 size={16} /> : <VolumeX size={16} />}
           </button>
 
-          {/* Overseer / Curator Admin Button */}
+          {/* Admin Panel Button */}
           <button
             onClick={() => {
               playSound('beep');
@@ -174,51 +125,64 @@ export function Header({ onOpenCart, onOpenAdmin, isCuratorMode, setIsCuratorMod
             }}
             className="btn btn-sm"
             style={{
-              borderColor: isCuratorMode ? 'var(--accent-secondary)' : 'var(--border-color)',
-              background: isCuratorMode ? 'rgba(212, 175, 55, 0.15)' : 'var(--bg-secondary)',
-              color: isCuratorMode ? 'var(--accent-secondary)' : 'var(--text-main)'
+              borderColor: 'var(--border-color)',
+              background: 'var(--bg-secondary)',
+              position: 'relative'
             }}
-            title="Kelola Barang Toko (Admin Panel)"
+            title="Kelola Barang, Kategori, & Pesanan Masuk"
           >
-            <Settings size={15} />
-            <span className="mono" style={{ fontSize: '0.75rem' }}>
-              {isCuratorMode ? "OVERSEER [ON]" : "KELOLA BARANG"}
+            <Settings size={15} color="var(--accent-secondary)" />
+            <span className="mono" style={{ fontSize: '0.78rem' }}>
+              PANEL ADMIN
             </span>
+            {pendingOrdersCount > 0 && (
+              <span style={{
+                background: '#ff2a44',
+                color: '#fff',
+                borderRadius: '10px',
+                padding: '1px 6px',
+                fontSize: '0.65rem',
+                fontWeight: 800,
+                marginLeft: '4px'
+              }}>
+                {pendingOrdersCount}
+              </span>
+            )}
           </button>
 
-          {/* Requisition Cart Button */}
+          {/* Keranjang Belanja Button */}
           <button
             onClick={() => {
               playSound('click');
               onOpenCart();
             }}
             className="btn btn-primary btn-sm"
-            style={{ position: 'relative', padding: '6px 14px' }}
+            style={{ position: 'relative', padding: '7px 16px' }}
           >
-            <ShoppingCart size={15} />
-            <span>REQUISITION</span>
+            <ShoppingCart size={16} />
+            <span>KERANJANG</span>
             {totalCartCount > 0 && (
               <span style={{
                 position: 'absolute',
                 top: '-7px',
                 right: '-7px',
-                background: '#ff2a44',
-                color: '#fff',
+                background: '#fff',
+                color: '#000',
                 borderRadius: '50%',
-                width: '18px',
-                height: '18px',
-                fontSize: '0.7rem',
+                width: '19px',
+                height: '19px',
+                fontSize: '0.72rem',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 fontWeight: 900,
-                border: '2px solid var(--bg-primary)',
-                boxShadow: '0 0 8px #ff2a44'
+                boxShadow: '0 0 10px rgba(255,255,255,0.8)'
               }}>
                 {totalCartCount}
               </span>
             )}
           </button>
+
         </div>
       </div>
     </header>

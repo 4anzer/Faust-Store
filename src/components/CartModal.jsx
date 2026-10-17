@@ -6,12 +6,9 @@ import {
   Plus, 
   Minus, 
   Send, 
-  Copy, 
-  Check, 
   ShoppingCart, 
-  CreditCard, 
-  User, 
-  FileText 
+  CheckCircle,
+  AlertCircle
 } from 'lucide-react';
 
 export function CartModal({ onClose }) {
@@ -21,6 +18,7 @@ export function CartModal({ onClose }) {
     removeFromCart, 
     clearCart, 
     merchantProfile, 
+    createOrder, 
     playSound 
   } = useCatalog();
 
@@ -30,7 +28,8 @@ export function CartModal({ onClose }) {
     merchantProfile.paymentMethods?.[0] || 'QRIS'
   );
   const [notes, setNotes] = useState('');
-  const [copied, setCopied] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [orderSuccess, setOrderSuccess] = useState(null);
 
   const formatPrice = (price, currency = 'Rp') => {
     if (typeof price === 'number') {
@@ -42,44 +41,67 @@ export function CartModal({ onClose }) {
   const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const totalItemsCount = cart.reduce((sum, item) => sum + item.quantity, 0);
 
-  // Generate formatted order text
-  const generateOrderMessage = () => {
-    const itemList = cart
-      .map(
-        (i, idx) =>
-          `${idx + 1}. ${i.name} [${i.game}] (x${i.quantity}) - ${formatPrice(i.price * i.quantity, i.currency)}`
-      )
-      .join('\n');
+  const handleSubmitOrder = async (e) => {
+    e.preventDefault();
+    if (!buyerName.trim()) {
+      alert("Mohon masukkan nama atau nickname game kamu!");
+      return;
+    }
+    if (!buyerContact.trim()) {
+      alert("Mohon masukkan nomor WhatsApp atau kontak kamu!");
+      return;
+    }
 
-    return (
-      `═════════════════════════════════\n` +
-      `📋 FORM REQUISITION PEMESANAN ITEM\n` +
-      `═════════════════════════════════\n` +
-      `👤 Pembeli / Nick Game: ${buyerName.trim() || 'Tidak disertakan'}\n` +
-      `📱 Kontak / Discord: ${buyerContact.trim() || 'Tidak disertakan'}\n` +
-      `💳 Metode Pembayaran: ${selectedPayment}\n` +
-      `📝 Catatan: ${notes.trim() || '-'}\n\n` +
-      `📦 DAFTAR ITEM YANG DIPESAN:\n` +
-      `${itemList}\n\n` +
-      `💰 TOTAL REQUISITION: ${formatPrice(totalPrice, 'Rp')}\n` +
-      `═════════════════════════════════\n` +
-      `Halo Bang, saya mau order item-item di atas. Apakah ready? Mohon arahan pembayarannya ya!`
-    );
-  };
+    setIsSubmitting(true);
 
-  const handleCheckoutWhatsApp = () => {
-    playSound('beep');
-    const waNumber = (merchantProfile.whatsapp || '').replace(/[^0-9]/g, '');
-    const message = encodeURIComponent(generateOrderMessage());
-    window.open(`https://wa.me/${waNumber}?text=${message}`, '_blank');
-  };
+    try {
+      // 1. Save order into orders database & trigger Discord webhook
+      const newOrder = await createOrder({
+        buyerName: buyerName.trim(),
+        buyerContact: buyerContact.trim(),
+        paymentMethod: selectedPayment,
+        notes: notes.trim(),
+        items: [...cart],
+        totalPrice: totalPrice
+      });
 
-  const handleCopyDiscord = () => {
-    playSound('beep');
-    const discordText = '```markdown\n' + generateOrderMessage() + '\n```';
-    navigator.clipboard.writeText(discordText);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+      setOrderSuccess(newOrder);
+
+      // 2. Prepare WhatsApp message
+      const itemListText = cart
+        .map(
+          (i, idx) =>
+            `${idx + 1}. ${i.name} [${i.game}] (${i.quantity}x) - ${formatPrice(i.price * i.quantity, i.currency)}`
+        )
+        .join('\n');
+
+      const waMessage = encodeURIComponent(
+        `═════════════════════════════════\n` +
+        `🛒 PESANAN BARU - FAUST STORE\n` +
+        `No. Order: #${newOrder.id}\n` +
+        `═════════════════════════════════\n` +
+        `👤 Pembeli: ${buyerName.trim()}\n` +
+        `📱 Kontak: ${buyerContact.trim()}\n` +
+        `💳 Pembayaran: ${selectedPayment}\n` +
+        `📝 Catatan: ${notes.trim() || '-'}\n\n` +
+        `📦 DAFTAR BARANG:\n` +
+        `${itemListText}\n\n` +
+        `💰 TOTAL: ${formatPrice(totalPrice, 'Rp')}\n` +
+        `═════════════════════════════════\n` +
+        `Halo Admin Faust Store, saya sudah submit order di website. Mohon info nomor rekening / QRIS dan proses pengirimannya ya!`
+      );
+
+      const waNumber = (merchantProfile.whatsapp || '').replace(/[^0-9]/g, '');
+      if (waNumber) {
+        window.open(`https://wa.me/${waNumber}?text=${waMessage}`, '_blank');
+      }
+
+    } catch (err) {
+      console.error(err);
+      alert("Gagal memproses pesanan: " + err.message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -87,7 +109,7 @@ export function CartModal({ onClose }) {
       <div 
         className="modal-content"
         onClick={(e) => e.stopPropagation()}
-        style={{ maxWidth: '780px' }}
+        style={{ maxWidth: '750px' }}
       >
         {/* Header */}
         <div style={{
@@ -100,8 +122,8 @@ export function CartModal({ onClose }) {
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <ShoppingCart size={18} color="var(--accent-primary)" />
-            <span className="serif-title" style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-main)' }}>
-              CONTAINMENT REQUISITION MANIFEST ({totalItemsCount} ITEM)
+            <span className="serif-title" style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--text-main)' }}>
+              KERANJANG BELANJA ({totalItemsCount} ITEM)
             </span>
           </div>
 
@@ -123,29 +145,67 @@ export function CartModal({ onClose }) {
 
         {/* Content */}
         <div style={{ padding: '20px' }}>
-          {cart.length === 0 ? (
+          
+          {/* Order Success Screen */}
+          {orderSuccess ? (
+            <div style={{ textAlign: 'center', padding: '30px 10px' }}>
+              <div style={{
+                width: '64px',
+                height: '64px',
+                borderRadius: '50%',
+                background: 'rgba(37, 211, 102, 0.15)',
+                border: '2px solid #25d366',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 16px auto'
+              }}>
+                <CheckCircle size={36} color="#25d366" />
+              </div>
+
+              <h3 className="serif-title" style={{ fontSize: '1.3rem', color: 'var(--text-main)', marginBottom: '8px' }}>
+                PESANAN BERHASIL DISUBMIT!
+              </h3>
+              <p className="mono" style={{ fontSize: '0.88rem', color: '#10b981', marginBottom: '12px' }}>
+                Kode Order: #{orderSuccess.id}
+              </p>
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', maxWidth: '480px', margin: '0 auto 20px auto', lineHeight: '1.5' }}>
+                Pesanan kamu sudah masuk ke daftar antrean admin dan notifikasi otomatis sudah dikirimkan. WhatsApp juga telah terbuka untuk konfirmasi langsung dengan penjual.
+              </p>
+
+              <button
+                onClick={() => {
+                  setOrderSuccess(null);
+                  onClose();
+                }}
+                className="btn btn-primary"
+              >
+                KEMBALI KE ETALASE
+              </button>
+            </div>
+          ) : cart.length === 0 ? (
             <div style={{
               textAlign: 'center',
               padding: '40px 20px',
               color: 'var(--text-muted)'
             }}>
-              <ShoppingCart size={48} style={{ opacity: 0.3, margin: '0 auto 12px auto' }} />
+              <ShoppingCart size={46} style={{ opacity: 0.3, margin: '0 auto 12px auto' }} />
               <h3 className="serif-title" style={{ color: 'var(--text-main)', marginBottom: '6px' }}>
-                MANIFEST REQUISITION MASIH KOSONG
+                KERANJANG BELANJA MASIH KOSONG
               </h3>
               <p style={{ fontSize: '0.85rem', marginBottom: '16px' }}>
-                Pilih item anomali atau in-game gear dari etalase untuk mulai memesan.
+                Silakan pilih item yang kamu inginkan dari etalase.
               </p>
               <button onClick={onClose} className="btn btn-primary btn-sm">
-                JELAJAHI ETALASE ITEM
+                LIHAT ETALASE BARANG
               </button>
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <form onSubmit={handleSubmitOrder} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
               
-              {/* Item List Table */}
+              {/* Item List */}
               <div style={{
-                maxHeight: '260px',
+                maxHeight: '220px',
                 overflowY: 'auto',
                 border: '1px solid var(--border-color)',
                 borderRadius: 'var(--radius-sm)',
@@ -177,15 +237,11 @@ export function CartModal({ onClose }) {
                         }}
                       />
                       <div>
-                        <div style={{
-                          fontSize: '0.86rem',
-                          fontWeight: 700,
-                          color: 'var(--text-main)'
-                        }}>
+                        <div style={{ fontSize: '0.88rem', fontWeight: 700, color: 'var(--text-main)' }}>
                           {item.name}
                         </div>
                         <div className="mono" style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
-                          {item.game} | {item.threat}
+                          {item.game}
                         </div>
                       </div>
                     </div>
@@ -193,6 +249,7 @@ export function CartModal({ onClose }) {
                     {/* Quantity controls */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <button
+                        type="button"
                         onClick={() => updateCartQuantity(item.id, -1)}
                         className="btn btn-sm"
                         style={{ padding: '2px 8px' }}
@@ -203,6 +260,7 @@ export function CartModal({ onClose }) {
                         {item.quantity}
                       </span>
                       <button
+                        type="button"
                         onClick={() => updateCartQuantity(item.id, 1)}
                         className="btn btn-sm"
                         style={{ padding: '2px 8px' }}
@@ -213,7 +271,7 @@ export function CartModal({ onClose }) {
 
                     {/* Subtotal */}
                     <div className="mono" style={{
-                      minWidth: '100px',
+                      minWidth: '95px',
                       textAlign: 'right',
                       fontWeight: 800,
                       color: 'var(--accent-primary)'
@@ -221,8 +279,9 @@ export function CartModal({ onClose }) {
                       {formatPrice(item.price * item.quantity, item.currency)}
                     </div>
 
-                    {/* Delete button */}
+                    {/* Remove */}
                     <button
+                      type="button"
                       onClick={() => removeFromCart(item.id)}
                       style={{
                         background: 'transparent',
@@ -230,7 +289,6 @@ export function CartModal({ onClose }) {
                         color: 'var(--text-muted)',
                         cursor: 'pointer'
                       }}
-                      title="Hapus dari keranjang"
                     >
                       <Trash2 size={16} />
                     </button>
@@ -238,7 +296,7 @@ export function CartModal({ onClose }) {
                 ))}
               </div>
 
-              {/* Total Calculation Strip */}
+              {/* Total Summary */}
               <div style={{
                 background: 'var(--bg-tertiary)',
                 padding: '12px 16px',
@@ -251,17 +309,18 @@ export function CartModal({ onClose }) {
                 gap: '8px'
               }}>
                 <button
+                  type="button"
                   onClick={clearCart}
                   className="btn btn-sm btn-danger"
-                  style={{ fontSize: '0.72rem' }}
+                  style={{ fontSize: '0.74rem' }}
                 >
                   <Trash2 size={12} />
-                  <span>KOSONGKAN MANIFEST</span>
+                  <span>KOSONGKAN</span>
                 </button>
 
                 <div style={{ textAlign: 'right' }}>
                   <span className="mono" style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block' }}>
-                    TOTAL BIAYA REQUISITION:
+                    TOTAL PEMBAYARAN:
                   </span>
                   <span className="mono glow-text" style={{
                     fontSize: '1.45rem',
@@ -273,7 +332,7 @@ export function CartModal({ onClose }) {
                 </div>
               </div>
 
-              {/* Checkout Form */}
+              {/* Customer Form (No Login Needed) */}
               <div style={{
                 background: 'var(--bg-secondary)',
                 border: '1px solid var(--border-color)',
@@ -283,9 +342,12 @@ export function CartModal({ onClose }) {
                 flexDirection: 'column',
                 gap: '12px'
               }}>
-                <h4 className="mono" style={{ fontSize: '0.8rem', color: 'var(--accent-secondary)' }}>
-                  // RINCIAN DATA PEMBELI (OPSIONAL AGAR CEPAT DIPROSES):
-                </h4>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--accent-secondary)' }}>
+                  <AlertCircle size={16} />
+                  <span className="mono" style={{ fontSize: '0.82rem', fontWeight: 700 }}>
+                    FORM PEMBELI (TANPA PERLU BUAT AKUN):
+                  </span>
+                </div>
 
                 <div style={{
                   display: 'grid',
@@ -293,26 +355,28 @@ export function CartModal({ onClose }) {
                   gap: '12px'
                 }}>
                   <div>
-                    <label className="mono" style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>
-                      NICKNAME GAME / UID AKUN:
+                    <label className="mono" style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>
+                      NAMA / NICKNAME GAME *:
                     </label>
                     <input
                       type="text"
+                      required
                       className="input"
-                      placeholder="Contoh: Dante#1234 / UID: 8129381"
+                      placeholder="Contoh: Dante / Player1"
                       value={buyerName}
                       onChange={(e) => setBuyerName(e.target.value)}
                     />
                   </div>
 
                   <div>
-                    <label className="mono" style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>
-                      NO. WHATSAPP / DISCORD KAMU:
+                    <label className="mono" style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>
+                      NOMOR WHATSAPP KAMU *:
                     </label>
                     <input
                       type="text"
+                      required
                       className="input"
-                      placeholder="Contoh: 08123456789 / user#0001"
+                      placeholder="Contoh: 08123456789"
                       value={buyerContact}
                       onChange={(e) => setBuyerContact(e.target.value)}
                     />
@@ -325,8 +389,8 @@ export function CartModal({ onClose }) {
                   gap: '12px'
                 }}>
                   <div>
-                    <label className="mono" style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>
-                      METODE PEMBAYARAN DIPILIH:
+                    <label className="mono" style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>
+                      METODE PEMBAYARAN:
                     </label>
                     <select
                       className="select"
@@ -340,13 +404,13 @@ export function CartModal({ onClose }) {
                   </div>
 
                   <div>
-                    <label className="mono" style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>
-                      CATATAN TAMBAHAN (OPSIONAL):
+                    <label className="mono" style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>
+                      CATATAN UNTUK PENJUAL (OPSIONAL):
                     </label>
                     <input
                       type="text"
                       className="input"
-                      placeholder="Contoh: Kirim via trade steam jam 8 malam"
+                      placeholder="Contoh: Tolong kirim sekarang ya min"
                       value={notes}
                       onChange={(e) => setNotes(e.target.value)}
                     />
@@ -354,53 +418,36 @@ export function CartModal({ onClose }) {
                 </div>
               </div>
 
-              {/* Dispatch Action Buttons */}
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
-                gap: '12px'
-              }}>
-                <button
-                  onClick={handleCheckoutWhatsApp}
-                  className="btn btn-primary"
-                  style={{
-                    background: '#25d366',
-                    borderColor: '#25d366',
-                    color: '#000',
-                    padding: '12px',
-                    fontSize: '0.88rem'
-                  }}
-                >
-                  <Send size={16} />
-                  <span>KIRIM ORDER KE WHATSAPP</span>
-                </button>
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="btn btn-success"
+                style={{
+                  padding: '13px',
+                  fontSize: '0.92rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px'
+                }}
+              >
+                <Send size={18} />
+                <span>{isSubmitting ? "MEMPROSES PESANAN..." : "KONFIRMASI PESANAN & LANJUT KE WHATSAPP"}</span>
+              </button>
 
-                <button
-                  onClick={handleCopyDiscord}
-                  className="btn"
-                  style={{
-                    borderColor: '#7289da',
-                    color: '#7289da',
-                    padding: '12px',
-                    fontSize: '0.88rem'
-                  }}
-                >
-                  {copied ? <Check size={16} color="#10b981" /> : <Copy size={16} />}
-                  <span>{copied ? "FORMAT TERSALIN!" : "SALIN FORMAT DISCORD"}</span>
-                </button>
-              </div>
-
-              <div style={{
+              <p style={{
                 textAlign: 'center',
-                fontSize: '0.72rem',
+                fontSize: '0.74rem',
                 color: 'var(--text-muted)',
                 fontFamily: 'var(--font-mono)'
               }}>
-                Setelah klik tombol WhatsApp, pesan otomatis akan terbuka di HP/PC kamu dan tinggal dikirim ke seller!
-              </div>
+                Pesanan akan otomatis tercatat di list admin dan terkirim notifikasinya ke Discord penjual.
+              </p>
 
-            </div>
+            </form>
           )}
+
         </div>
       </div>
     </div>

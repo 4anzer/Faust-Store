@@ -8,7 +8,7 @@ import { ItemModal } from './components/ItemModal';
 import { CartModal } from './components/CartModal';
 import { AdminModal } from './components/AdminModal';
 import { Footer } from './components/Footer';
-import { ShieldAlert, PackageX, Sparkles, Plus } from 'lucide-react';
+import { PackageX, Plus } from 'lucide-react';
 
 function CatalogApp() {
   const { items, playSound } = useCatalog();
@@ -16,7 +16,6 @@ function CatalogApp() {
   // Filters
   const [selectedGame, setSelectedGame] = useState('ALL');
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedThreat, setSelectedThreat] = useState('ALL');
   const [sortBy, setSortBy] = useState('featured');
   const [inStockOnly, setInStockOnly] = useState(false);
 
@@ -36,11 +35,6 @@ function CatalogApp() {
           return false;
         }
 
-        // Threat filter
-        if (selectedThreat !== 'ALL' && item.threat !== selectedThreat) {
-          return false;
-        }
-
         // Stock filter
         if (inStockOnly && item.stock <= 0) {
           return false;
@@ -53,8 +47,7 @@ function CatalogApp() {
           const matchDesc = item.description?.toLowerCase().includes(q);
           const matchGame = item.game?.toLowerCase().includes(q);
           const matchTag = item.tag?.toLowerCase().includes(q);
-          const matchThreat = item.threat?.toLowerCase().includes(q);
-          if (!matchName && !matchDesc && !matchGame && !matchTag && !matchThreat) {
+          if (!matchName && !matchDesc && !matchGame && !matchTag) {
             return false;
           }
         }
@@ -79,7 +72,7 @@ function CatalogApp() {
         if (!a.featured && b.featured) return 1;
         return 0;
       });
-  }, [items, selectedGame, selectedThreat, inStockOnly, searchQuery, sortBy]);
+  }, [items, selectedGame, inStockOnly, searchQuery, sortBy]);
 
   const handleEditItem = (item) => {
     setEditingItem(item);
@@ -89,7 +82,7 @@ function CatalogApp() {
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       
-      {/* Top Header */}
+      {/* Header */}
       <Header
         onOpenCart={() => setIsCartOpen(true)}
         onOpenAdmin={() => {
@@ -97,20 +90,17 @@ function CatalogApp() {
           setIsAdminOpen(true);
         }}
         isCuratorMode={isCuratorMode}
-        setIsCuratorMode={setIsCuratorMode}
       />
 
-      {/* Atmospheric Broadcast Banner */}
+      {/* Broadcast Banner */}
       <Banner />
 
-      {/* Filtering and Search Controls */}
+      {/* Filter and Search Bar */}
       <FilterBar
         selectedGame={selectedGame}
         setSelectedGame={setSelectedGame}
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
-        selectedThreat={selectedThreat}
-        setSelectedThreat={setSelectedThreat}
         sortBy={sortBy}
         setSortBy={setSortBy}
         inStockOnly={inStockOnly}
@@ -135,25 +125,24 @@ function CatalogApp() {
             borderRadius: 'var(--radius-sm)',
             margin: '20px 0'
           }}>
-            <PackageX size={54} color="var(--accent-primary)" style={{ opacity: 0.6, margin: '0 auto 16px auto' }} />
+            <PackageX size={52} color="var(--accent-primary)" style={{ opacity: 0.6, margin: '0 auto 16px auto' }} />
             <h3 className="serif-title" style={{ fontSize: '1.25rem', color: 'var(--text-main)', marginBottom: '8px' }}>
-              TIDAK ADA ANOMALI ATAU ITEM DITEMUKAN
+              TIDAK ADA BARANG DITEMUKAN
             </h3>
-            <p className="mono" style={{ fontSize: '0.85rem', color: 'var(--text-muted)', maxWidth: '500px', margin: '0 auto 20px auto' }}>
-              Tidak ada data yang cocok dengan kriteria pencarian atau filter yang kamu pilih.
+            <p className="mono" style={{ fontSize: '0.85rem', color: 'var(--text-muted)', maxWidth: '480px', margin: '0 auto 20px auto' }}>
+              Tidak ada barang yang cocok dengan kata kunci pencarian atau filter yang dipilih.
             </p>
             <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
               <button
                 onClick={() => {
                   playSound('glitch');
                   setSelectedGame('ALL');
-                  setSelectedThreat('ALL');
                   setSearchQuery('');
                   setInStockOnly(false);
                 }}
                 className="btn btn-sm btn-primary"
               >
-                RESET SEMUA FILTER
+                RESET FILTER
               </button>
 
               <button
@@ -164,7 +153,7 @@ function CatalogApp() {
                 className="btn btn-sm"
               >
                 <Plus size={14} />
-                <span>TAMBAH ITEM KE GAME INI</span>
+                <span>TAMBAH BARANG BARU</span>
               </button>
             </div>
           </div>
@@ -193,7 +182,7 @@ function CatalogApp() {
       {/* Footer */}
       <Footer />
 
-      {/* Item Detail Dossier Modal */}
+      {/* Product Detail Modal */}
       {inspectedItem && (
         <ItemModal
           item={inspectedItem}
@@ -205,12 +194,12 @@ function CatalogApp() {
         />
       )}
 
-      {/* Cart & Checkout Manifest Modal */}
+      {/* Cart Modal */}
       {isCartOpen && (
         <CartModal onClose={() => setIsCartOpen(false)} />
       )}
 
-      {/* Merchant / Curator Overseer Modal */}
+      {/* Admin Panel Modal */}
       {isAdminOpen && (
         <AdminModal
           onClose={() => setIsAdminOpen(false)}

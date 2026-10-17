@@ -1,15 +1,12 @@
 import React from 'react';
 import { useCatalog } from '../context/CatalogContext';
-import { THREAT_LEVELS } from '../data/defaultData';
-import { Search, Filter, ArrowUpDown, X, Tag } from 'lucide-react';
+import { Search, ArrowUpDown, X } from 'lucide-react';
 
 export function FilterBar({
   selectedGame,
   setSelectedGame,
   searchQuery,
   setSearchQuery,
-  selectedThreat,
-  setSelectedThreat,
   sortBy,
   setSortBy,
   inStockOnly,
@@ -23,21 +20,10 @@ export function FilterBar({
     setSelectedGame(g);
   };
 
-  const handleThreatSelect = (e) => {
-    playSound('click');
-    setSelectedThreat(e.target.value);
-  };
-
-  const handleSortSelect = (e) => {
-    playSound('click');
-    setSortBy(e.target.value);
-  };
-
   const handleResetFilters = () => {
     playSound('glitch');
     setSelectedGame('ALL');
     setSearchQuery('');
-    setSelectedThreat('ALL');
     setSortBy('featured');
     setInStockOnly(false);
   };
@@ -45,18 +31,17 @@ export function FilterBar({
   const hasActiveFilters =
     selectedGame !== 'ALL' ||
     searchQuery.trim() !== '' ||
-    selectedThreat !== 'ALL' ||
     inStockOnly ||
     sortBy !== 'featured';
 
   return (
     <div style={{
       maxWidth: '1350px',
-      margin: '24px auto 16px auto',
+      margin: '20px auto 14px auto',
       padding: '0 20px',
       display: 'flex',
       flexDirection: 'column',
-      gap: '16px'
+      gap: '14px'
     }}>
       {/* Category Pills / Game Tabs */}
       <div style={{
@@ -72,13 +57,13 @@ export function FilterBar({
           className="btn btn-sm"
           style={{
             background: selectedGame === 'ALL' ? 'var(--accent-primary)' : 'var(--bg-secondary)',
-            color: selectedGame === 'ALL' ? '#000' : 'var(--text-main)',
+            color: selectedGame === 'ALL' ? '#fff' : 'var(--text-main)',
             borderColor: selectedGame === 'ALL' ? 'var(--accent-primary)' : 'var(--border-color)',
             fontWeight: selectedGame === 'ALL' ? 700 : 500,
             whiteSpace: 'nowrap'
           }}
         >
-          SEMUA GAME & ANOMALI
+          🎮 SEMUA GAME ({filteredCount})
         </button>
 
         {games.map((g) => {
@@ -90,7 +75,7 @@ export function FilterBar({
               className="btn btn-sm"
               style={{
                 background: isSelected ? 'var(--accent-primary)' : 'var(--bg-secondary)',
-                color: isSelected ? '#000' : 'var(--text-main)',
+                color: isSelected ? '#fff' : 'var(--text-main)',
                 borderColor: isSelected ? 'var(--accent-primary)' : 'var(--border-color)',
                 fontWeight: isSelected ? 700 : 500,
                 whiteSpace: 'nowrap'
@@ -102,7 +87,7 @@ export function FilterBar({
         })}
       </div>
 
-      {/* Search and Dropdowns Bar */}
+      {/* Search and Sorting */}
       <div style={{
         display: 'flex',
         alignItems: 'center',
@@ -110,8 +95,8 @@ export function FilterBar({
         flexWrap: 'wrap',
         gap: '12px'
       }}>
-        {/* Search Input */}
-        <div style={{ position: 'relative', flex: '1 1 280px', minWidth: '240px' }}>
+        {/* Search Box */}
+        <div style={{ position: 'relative', flex: '1 1 300px', minWidth: '240px' }}>
           <Search size={16} color="var(--text-muted)" style={{
             position: 'absolute',
             left: '12px',
@@ -123,7 +108,7 @@ export function FilterBar({
             className="input"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Cari nama item, tag, kode anomali, senjata..."
+            placeholder="Cari nama item, senjata, akun, atau layanan..."
             style={{ paddingLeft: '36px' }}
           />
           {searchQuery && (
@@ -145,58 +130,41 @@ export function FilterBar({
           )}
         </div>
 
-        {/* Dropdown Filters */}
+        {/* Sorting and Ready Stock */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
           
-          {/* Threat / Hazard Select */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <Filter size={15} color="var(--text-muted)" />
-            <select
-              className="select"
-              value={selectedThreat}
-              onChange={handleThreatSelect}
-              style={{ width: 'auto', minWidth: '130px', padding: '7px 10px' }}
-            >
-              <option value="ALL">Semua Threat (Rarity)</option>
-              {Object.keys(THREAT_LEVELS).map((lvl) => (
-                <option key={lvl} value={lvl}>
-                  {lvl} - {THREAT_LEVELS[lvl].name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Sort By Select */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <ArrowUpDown size={15} color="var(--text-muted)" />
             <select
               className="select"
               value={sortBy}
-              onChange={handleSortSelect}
-              style={{ width: 'auto', minWidth: '150px', padding: '7px 10px' }}
+              onChange={(e) => {
+                playSound('click');
+                setSortBy(e.target.value);
+              }}
+              style={{ width: 'auto', minWidth: '160px', padding: '8px 12px' }}
             >
-              <option value="featured">Featured / Rekomendasi</option>
-              <option value="price-asc">Harga: Terendah</option>
+              <option value="featured">Rekomendasi / Populer</option>
+              <option value="price-asc">Harga: Termurah</option>
               <option value="price-desc">Harga: Tertinggi</option>
               <option value="stock">Stok Terbanyak</option>
               <option value="name">Nama Item (A-Z)</option>
             </select>
           </div>
 
-          {/* In-Stock Only Toggle */}
           <label style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '6px',
-            fontSize: '0.8rem',
+            gap: '8px',
+            fontSize: '0.82rem',
             fontFamily: 'var(--font-mono)',
             cursor: 'pointer',
             userSelect: 'none',
             color: 'var(--text-main)',
             background: 'var(--bg-secondary)',
-            padding: '7px 12px',
+            padding: '8px 12px',
             border: '1px solid var(--border-color)',
-            borderRadius: '2px'
+            borderRadius: 'var(--radius-sm)'
           }}>
             <input
               type="checkbox"
@@ -207,15 +175,14 @@ export function FilterBar({
               }}
               style={{ accentColor: 'var(--accent-primary)', cursor: 'pointer' }}
             />
-            <span>HANYA YANG READY</span>
+            <span>HANYA STOK READY</span>
           </label>
 
-          {/* Reset Filters button if any active */}
           {hasActiveFilters && (
             <button
               onClick={handleResetFilters}
               className="btn btn-sm btn-danger"
-              title="Reset semua filter"
+              title="Reset pencarian"
             >
               <X size={13} />
               <span>RESET</span>
@@ -223,24 +190,6 @@ export function FilterBar({
           )}
 
         </div>
-      </div>
-
-      {/* Result Status Indicator */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        fontSize: '0.78rem',
-        color: 'var(--text-muted)',
-        fontFamily: 'var(--font-mono)',
-        borderTop: '1px dashed var(--border-color)',
-        paddingTop: '8px'
-      }}>
-        <span>
-          TERDETEKSI: <strong style={{ color: 'var(--accent-primary)' }}>{filteredCount} ITEM</strong>
-          {selectedGame !== 'ALL' && ` DALAM KATEGORI [${selectedGame}]`}
-        </span>
-        <span>KLASIFIKASI ANOMALI SIAP KIRIM // INSTANT DISPATCH</span>
       </div>
     </div>
   );

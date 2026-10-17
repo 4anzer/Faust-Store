@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useCatalog } from '../context/CatalogContext';
 import { THREAT_LEVELS } from '../data/defaultData';
+import { testDiscordWebhook } from '../utils/discordWebhook';
 import { 
   X, 
   Plus, 
@@ -10,19 +11,21 @@ import {
   Download, 
   RotateCcw, 
   Save, 
-  Gamepad2, 
   Settings, 
-  Layers, 
-  Database,
+  Inbox,
+  Send,
   CheckCircle,
-  HelpCircle,
-  Sparkles
+  Clock,
+  Ban,
+  MessageSquare,
+  Bell
 } from 'lucide-react';
 
 export function AdminModal({ onClose, editingItem, setEditingItem }) {
   const { 
     items, 
     games, 
+    orders,
     merchantProfile, 
     addItem, 
     updateItem, 
@@ -30,15 +33,17 @@ export function AdminModal({ onClose, editingItem, setEditingItem }) {
     addCategory, 
     deleteCategory, 
     updateMerchantProfile, 
+    updateOrderStatus,
+    deleteOrder,
     resetToDefaults, 
     exportDatabaseJSON, 
     importDatabaseJSON, 
     playSound 
   } = useCatalog();
 
-  const [activeTab, setActiveTab] = useState(editingItem ? 'item-form' : 'items-list');
+  const [activeTab, setActiveTab] = useState(editingItem ? 'item-form' : (orders.length > 0 ? 'orders' : 'items-list'));
 
-  // New or Edited Item State
+  // Form Item State
   const initialFormState = {
     name: '',
     game: games[0] || 'Limbus Company',
@@ -46,25 +51,23 @@ export function AdminModal({ onClose, editingItem, setEditingItem }) {
     price: 50000,
     currency: 'Rp',
     stock: 1,
-    tag: 'E.G.O / Weapon',
+    tag: 'Item / Senjata',
     image: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=600&auto=format&fit=crop&q=80',
     description: '',
     deliveryMethod: 'Pengiriman instan via chat langsung.',
     featured: false,
     properties: [
-      { label: 'Tipe', value: 'Tradeable' },
-      { label: 'Garansi', value: '30 Hari Full' }
+      { label: 'Status', value: 'Ready' }
     ]
   };
 
   const [formData, setFormData] = useState(initialFormState);
   const [newGameInput, setNewGameInput] = useState('');
   const [profileForm, setProfileForm] = useState({ ...merchantProfile });
+  const [testingWebhook, setTestingWebhook] = useState(false);
+  const [webhookTestResult, setWebhookTestResult] = useState(null);
   const [importStatus, setImportStatus] = useState(null);
-  const [newPropKey, setNewPropKey] = useState('');
-  const [newPropVal, setNewPropVal] = useState('');
 
-  // Sync edit item if provided
   useEffect(() => {
     if (editingItem) {
       setFormData({
@@ -76,11 +79,12 @@ export function AdminModal({ onClose, editingItem, setEditingItem }) {
     }
   }, [editingItem]);
 
+  // Image upload handler (Convert to Base64)
   const handleImageFileUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
       if (file.size > 2 * 1024 * 1024) {
-        alert("Ukuran gambar maksimal 2MB!");
+        alert("Ukuran file gambar maksimal 2MB!");
         return;
       }
       const reader = new FileReader();
@@ -95,38 +99,21 @@ export function AdminModal({ onClose, editingItem, setEditingItem }) {
   const handleSaveItem = (e) => {
     e.preventDefault();
     if (!formData.name.trim()) {
-      alert("Nama item harus diisi!");
+      alert("Nama barang harus diisi!");
       return;
     }
 
     if (editingItem && editingItem.id) {
       updateItem(editingItem.id, formData);
-      alert(`Item "${formData.name}" berhasil diperbarui!`);
+      alert(`Barang "${formData.name}" berhasil diperbarui!`);
     } else {
       addItem(formData);
-      alert(`Item baru "${formData.name}" berhasil ditambahkan ke kategori ${formData.game}!`);
+      alert(`Barang baru "${formData.name}" berhasil ditambahkan ke kategori ${formData.game}!`);
     }
 
     setFormData(initialFormState);
     setEditingItem(null);
     setActiveTab('items-list');
-  };
-
-  const handleAddProperty = () => {
-    if (!newPropKey.trim() || !newPropVal.trim()) return;
-    setFormData((prev) => ({
-      ...prev,
-      properties: [...(prev.properties || []), { label: newPropKey.trim(), value: newPropVal.trim() }]
-    }));
-    setNewPropKey('');
-    setNewPropVal('');
-  };
-
-  const handleRemoveProperty = (index) => {
-    setFormData((prev) => ({
-      ...prev,
-      properties: prev.properties.filter((_, i) => i !== index)
-    }));
   };
 
   const handleAddGameCategory = (e) => {
@@ -139,24 +126,31 @@ export function AdminModal({ onClose, editingItem, setEditingItem }) {
   const handleSaveProfile = (e) => {
     e.preventDefault();
     updateMerchantProfile(profileForm);
-    alert("Profil toko & kontak berhasil diperbarui!");
+    alert("Pengaturan toko dan webhook berhasil disimpan!");
   };
 
-  const handleImportFile = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const res = importDatabaseJSON(event.target.result);
-        if (res.success) {
-          setImportStatus("Import database berhasil dipulihkan!");
-          setTimeout(() => setImportStatus(null), 3000);
-        } else {
-          setImportStatus(`Gagal import: ${res.error}`);
-        }
-      };
-      reader.readAsText(file);
+  const handleTestWebhook = async () => {
+    if (!profileForm.discordWebhook) {
+      alert("Masukkan URL Discord Webhook terlebih dahulu!");
+      return;
     }
+    setTestingWebhook(true);
+    setWebhookTestResult(null);
+    const result = await testDiscordWebhook(profileForm.discordWebhook);
+    setWebhookTestResult(result);
+    setTestingWebhook(false);
+    if (result.success) {
+      playSound('equip');
+    } else {
+      playSound('hazard');
+    }
+  };
+
+  const formatPrice = (price, currency = 'Rp') => {
+    if (typeof price === 'number') {
+      return `${currency} ${price.toLocaleString('id-ID')}`;
+    }
+    return `${currency} ${price}`;
   };
 
   return (
@@ -164,9 +158,9 @@ export function AdminModal({ onClose, editingItem, setEditingItem }) {
       <div 
         className="modal-content"
         onClick={(e) => e.stopPropagation()}
-        style={{ maxWidth: '950px' }}
+        style={{ maxWidth: '960px' }}
       >
-        {/* Modal Header */}
+        {/* Header */}
         <div style={{
           padding: '14px 20px',
           background: 'var(--bg-tertiary)',
@@ -178,7 +172,7 @@ export function AdminModal({ onClose, editingItem, setEditingItem }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Settings size={18} color="var(--accent-secondary)" />
             <span className="serif-title" style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--text-main)' }}>
-              OVERSEER CONSOLE // KELOLA INVENTARIS TOKO
+              PANEL ADMIN // FAUST STORE
             </span>
           </div>
 
@@ -198,13 +192,35 @@ export function AdminModal({ onClose, editingItem, setEditingItem }) {
           </button>
         </div>
 
-        {/* Navigation Tabs */}
+        {/* Tab Navigation */}
         <div style={{
           display: 'flex',
           borderBottom: '1px solid var(--border-color)',
           background: 'var(--bg-secondary)',
           overflowX: 'auto'
         }}>
+          <button
+            onClick={() => { playSound('click'); setActiveTab('orders'); }}
+            style={{
+              padding: '12px 18px',
+              background: activeTab === 'orders' ? 'var(--bg-card)' : 'transparent',
+              border: 'none',
+              borderBottom: activeTab === 'orders' ? '2px solid var(--accent-primary)' : '2px solid transparent',
+              color: activeTab === 'orders' ? 'var(--accent-primary)' : 'var(--text-muted)',
+              fontFamily: 'var(--font-mono)',
+              fontSize: '0.84rem',
+              fontWeight: 700,
+              cursor: 'pointer',
+              whiteSpace: 'nowrap',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}
+          >
+            <Inbox size={15} />
+            <span>PESANAN MASUK ({orders.length})</span>
+          </button>
+
           <button
             onClick={() => { playSound('click'); setActiveTab('items-list'); }}
             style={{
@@ -214,13 +230,13 @@ export function AdminModal({ onClose, editingItem, setEditingItem }) {
               borderBottom: activeTab === 'items-list' ? '2px solid var(--accent-primary)' : '2px solid transparent',
               color: activeTab === 'items-list' ? 'var(--accent-primary)' : 'var(--text-muted)',
               fontFamily: 'var(--font-mono)',
-              fontSize: '0.82rem',
+              fontSize: '0.84rem',
               fontWeight: 700,
               cursor: 'pointer',
               whiteSpace: 'nowrap'
             }}
           >
-            📋 DAFTAR ITEM ({items.length})
+            📦 DAFTAR BARANG ({items.length})
           </button>
 
           <button
@@ -239,13 +255,13 @@ export function AdminModal({ onClose, editingItem, setEditingItem }) {
               borderBottom: activeTab === 'item-form' ? '2px solid var(--accent-primary)' : '2px solid transparent',
               color: activeTab === 'item-form' ? 'var(--accent-primary)' : 'var(--text-muted)',
               fontFamily: 'var(--font-mono)',
-              fontSize: '0.82rem',
+              fontSize: '0.84rem',
               fontWeight: 700,
               cursor: 'pointer',
               whiteSpace: 'nowrap'
             }}
           >
-            ➕ {editingItem ? 'EDIT ITEM' : 'TAMBAH ITEM BARU'}
+            ➕ {editingItem ? 'EDIT BARANG' : 'TAMBAH BARANG'}
           </button>
 
           <button
@@ -257,7 +273,7 @@ export function AdminModal({ onClose, editingItem, setEditingItem }) {
               borderBottom: activeTab === 'categories' ? '2px solid var(--accent-primary)' : '2px solid transparent',
               color: activeTab === 'categories' ? 'var(--accent-primary)' : 'var(--text-muted)',
               fontFamily: 'var(--font-mono)',
-              fontSize: '0.82rem',
+              fontSize: '0.84rem',
               fontWeight: 700,
               cursor: 'pointer',
               whiteSpace: 'nowrap'
@@ -275,13 +291,17 @@ export function AdminModal({ onClose, editingItem, setEditingItem }) {
               borderBottom: activeTab === 'profile' ? '2px solid var(--accent-primary)' : '2px solid transparent',
               color: activeTab === 'profile' ? 'var(--accent-primary)' : 'var(--text-muted)',
               fontFamily: 'var(--font-mono)',
-              fontSize: '0.82rem',
+              fontSize: '0.84rem',
               fontWeight: 700,
               cursor: 'pointer',
-              whiteSpace: 'nowrap'
+              whiteSpace: 'nowrap',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px'
             }}
           >
-            ⚙️ PENGATURAN TOKO & WA
+            <Bell size={14} />
+            <span>DISCORD WEBHOOK & KONTAK</span>
           </button>
 
           <button
@@ -293,17 +313,215 @@ export function AdminModal({ onClose, editingItem, setEditingItem }) {
               borderBottom: activeTab === 'backup' ? '2px solid var(--accent-primary)' : '2px solid transparent',
               color: activeTab === 'backup' ? 'var(--accent-primary)' : 'var(--text-muted)',
               fontFamily: 'var(--font-mono)',
-              fontSize: '0.82rem',
+              fontSize: '0.84rem',
               fontWeight: 700,
               cursor: 'pointer',
               whiteSpace: 'nowrap'
             }}
           >
-            💾 BACKUP & VERCEL
+            💾 BACKUP JSON
           </button>
         </div>
 
-        {/* Tab 1: ITEMS LIST */}
+        {/* TAB 1: ORDERS LIST (Pesanan Masuk Pelanggan) */}
+        {activeTab === 'orders' && (
+          <div style={{ padding: '20px' }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: '16px',
+              flexWrap: 'wrap',
+              gap: '10px'
+            }}>
+              <div>
+                <h3 className="serif-title" style={{ fontSize: '1.15rem', color: 'var(--text-main)' }}>
+                  DAFTAR PESANAN DARI PELANGGAN (TANPA LOGIN)
+                </h3>
+                <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
+                  Setiap pelanggan yang checkout di keranjang akan otomatis tercatat di list ini.
+                </p>
+              </div>
+
+              {orders.length > 0 && (
+                <button
+                  onClick={() => {
+                    if (window.confirm("Hapus semua riwayat pesanan?")) {
+                      orders.forEach(o => deleteOrder(o.id));
+                    }
+                  }}
+                  className="btn btn-sm btn-danger"
+                >
+                  <Trash2 size={13} />
+                  <span>BERSIHKAN RIWAYAT</span>
+                </button>
+              )}
+            </div>
+
+            {orders.length === 0 ? (
+              <div style={{
+                textAlign: 'center',
+                padding: '40px 20px',
+                border: '1px dashed var(--border-color)',
+                borderRadius: 'var(--radius-sm)',
+                color: 'var(--text-muted)'
+              }}>
+                <Inbox size={42} style={{ opacity: 0.3, margin: '0 auto 10px auto' }} />
+                <h4 style={{ color: 'var(--text-main)', marginBottom: '4px' }}>Belum Ada Pesanan Masuk</h4>
+                <p style={{ fontSize: '0.82rem' }}>Saat pelanggan memesan di website, detailnya akan muncul langsung di sini.</p>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {orders.map((ord) => {
+                  const cleanWA = (ord.buyerContact || '').replace(/[^0-9]/g, '');
+                  const isPending = ord.status === 'Pending';
+                  const isDone = ord.status === 'Selesai';
+
+                  return (
+                    <div
+                      key={ord.id}
+                      style={{
+                        background: 'var(--bg-primary)',
+                        border: '1px solid var(--border-color)',
+                        padding: '16px',
+                        borderRadius: 'var(--radius-sm)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '10px'
+                      }}
+                    >
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        flexWrap: 'wrap',
+                        gap: '8px',
+                        borderBottom: '1px solid var(--border-color)',
+                        paddingBottom: '8px'
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <span className="mono" style={{ fontWeight: 800, color: 'var(--accent-primary)', fontSize: '0.9rem' }}>
+                            #{ord.id}
+                          </span>
+                          <span className="mono" style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>
+                            {new Date(ord.createdAt).toLocaleString('id-ID')}
+                          </span>
+                        </div>
+
+                        {/* Status selector */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span className="mono" style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>Status:</span>
+                          <select
+                            className="select"
+                            value={ord.status}
+                            onChange={(e) => updateOrderStatus(ord.id, e.target.value)}
+                            style={{
+                              width: 'auto',
+                              padding: '4px 8px',
+                              fontSize: '0.75rem',
+                              fontWeight: 700,
+                              color: isDone ? '#10b981' : isPending ? '#f5c518' : '#ff2a44',
+                              borderColor: isDone ? '#10b981' : isPending ? '#f5c518' : '#ff2a44'
+                            }}
+                          >
+                            <option value="Pending">Pending (Menunggu)</option>
+                            <option value="Selesai">Selesai (Sudah Dikirim)</option>
+                            <option value="Dibatalkan">Dibatalkan</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      {/* Customer Details & Total */}
+                      <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                        gap: '10px',
+                        fontSize: '0.84rem'
+                      }}>
+                        <div>
+                          <div style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}>PEMBELI:</div>
+                          <strong style={{ color: 'var(--text-main)' }}>{ord.buyerName}</strong>
+                        </div>
+
+                        <div>
+                          <div style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}>KONTAK:</div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <span>{ord.buyerContact}</span>
+                            {cleanWA && (
+                              <a
+                                href={`https://wa.me/${cleanWA.startsWith('0') ? '62' + cleanWA.slice(1) : cleanWA}`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="btn btn-sm btn-success"
+                                style={{ padding: '2px 8px', fontSize: '0.7rem' }}
+                              >
+                                Chat WA
+                              </a>
+                            )}
+                          </div>
+                        </div>
+
+                        <div>
+                          <div style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}>PEMBAYARAN:</div>
+                          <strong style={{ color: 'var(--accent-secondary)' }}>{ord.paymentMethod}</strong>
+                        </div>
+
+                        <div>
+                          <div style={{ color: 'var(--text-muted)', fontSize: '0.72rem' }}>TOTAL PEMBAYARAN:</div>
+                          <strong style={{ color: 'var(--accent-primary)', fontSize: '1rem' }}>
+                            {formatPrice(ord.totalPrice, 'Rp')}
+                          </strong>
+                        </div>
+                      </div>
+
+                      {/* Items Ordered */}
+                      <div style={{
+                        background: 'var(--bg-tertiary)',
+                        padding: '10px',
+                        borderRadius: '2px',
+                        fontSize: '0.8rem'
+                      }}>
+                        <div style={{ color: 'var(--text-muted)', fontSize: '0.72rem', marginBottom: '4px' }}>
+                          DAFTAR ITEM YANG DIBELI:
+                        </div>
+                        {ord.items.map((it, idx) => (
+                          <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', padding: '3px 0' }}>
+                            <span>• {it.name} [{it.game}] (x{it.quantity})</span>
+                            <span className="mono" style={{ color: 'var(--accent-primary)' }}>
+                              {formatPrice(it.price * it.quantity, 'Rp')}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+
+                      {ord.notes && (
+                        <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                          <strong>Catatan Pembeli:</strong> <em>"{ord.notes}"</em>
+                        </div>
+                      )}
+
+                      {/* Delete order */}
+                      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                        <button
+                          onClick={() => {
+                            if (window.confirm("Hapus pesanan ini?")) deleteOrder(ord.id);
+                          }}
+                          className="btn btn-sm btn-danger"
+                          style={{ padding: '3px 8px', fontSize: '0.7rem' }}
+                        >
+                          <Trash2 size={12} />
+                          <span>Hapus Pesanan</span>
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* TAB 2: ITEMS LIST */}
         {activeTab === 'items-list' && (
           <div style={{ padding: '20px' }}>
             <div style={{
@@ -316,10 +534,10 @@ export function AdminModal({ onClose, editingItem, setEditingItem }) {
             }}>
               <div>
                 <h3 className="serif-title" style={{ fontSize: '1.1rem', color: 'var(--text-main)' }}>
-                  DAFTAR SELURUH ITEM INVENTARIS
+                  DAFTAR SELURUH BARANG TOKO
                 </h3>
                 <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                  Klik Edit untuk mengubah harga/stok, atau Tambah Item Baru untuk memasukkan item game lain.
+                  Ubah nama, harga, stok, atau upload gambar baru untuk setiap item.
                 </p>
               </div>
 
@@ -332,12 +550,12 @@ export function AdminModal({ onClose, editingItem, setEditingItem }) {
                 className="btn btn-primary btn-sm"
               >
                 <Plus size={14} />
-                <span>TAMBAH ITEM BARU</span>
+                <span>TAMBAH BARANG BARU</span>
               </button>
             </div>
 
             <div style={{
-              maxHeight: '420px',
+              maxHeight: '440px',
               overflowY: 'auto',
               border: '1px solid var(--border-color)',
               borderRadius: 'var(--radius-sm)'
@@ -373,7 +591,7 @@ export function AdminModal({ onClose, editingItem, setEditingItem }) {
                         {it.name}
                       </div>
                       <div className="mono" style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>
-                        {it.game} | Threat: <strong style={{ color: THREAT_LEVELS[it.threat]?.color || '#fff' }}>{it.threat}</strong> | Stok: {it.stock}
+                        {it.game} | Stok: <strong style={{ color: it.stock > 0 ? '#10b981' : '#ff2a44' }}>{it.stock}</strong>
                       </div>
                     </div>
                   </div>
@@ -385,7 +603,7 @@ export function AdminModal({ onClose, editingItem, setEditingItem }) {
                     color: 'var(--accent-primary)',
                     fontSize: '0.95rem'
                   }}>
-                    {it.currency} {typeof it.price === 'number' ? it.price.toLocaleString('id-ID') : it.price}
+                    {formatPrice(it.price, it.currency)}
                   </div>
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -408,7 +626,7 @@ export function AdminModal({ onClose, editingItem, setEditingItem }) {
 
                     <button
                       onClick={() => {
-                        if (window.confirm(`Hapus item: "${it.name}"?`)) {
+                        if (window.confirm(`Hapus barang: "${it.name}"?`)) {
                           deleteItem(it.id);
                         }
                       }}
@@ -424,18 +642,18 @@ export function AdminModal({ onClose, editingItem, setEditingItem }) {
           </div>
         )}
 
-        {/* Tab 2: ITEM FORM (ADD / EDIT) */}
+        {/* TAB 3: ADD / EDIT ITEM FORM */}
         {activeTab === 'item-form' && (
-          <form onSubmit={handleSaveItem} style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <form onSubmit={handleSaveItem} style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
             <div style={{
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
               borderBottom: '1px solid var(--border-color)',
-              paddingBottom: '10px'
+              paddingBottom: '8px'
             }}>
               <h3 className="serif-title" style={{ fontSize: '1.1rem', color: 'var(--text-main)' }}>
-                {editingItem ? `EDIT ITEM: ${editingItem.name}` : 'TAMBAH ITEM INVENTARIS BARU'}
+                {editingItem ? `EDIT BARANG: ${editingItem.name}` : 'TAMBAH BARANG BARU'}
               </h3>
               {editingItem && (
                 <button
@@ -446,29 +664,29 @@ export function AdminModal({ onClose, editingItem, setEditingItem }) {
                   }}
                   className="btn btn-sm"
                 >
-                  Batal Edit / Tambah Baru
+                  Batal Edit
                 </button>
               )}
             </div>
 
-            {/* Row 1: Name and Category */}
+            {/* Name and Game category */}
             <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '12px' }}>
               <div>
-                <label className="mono" style={{ fontSize: '0.74rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>
-                  NAMA ITEM / ANOMALI *:
+                <label className="mono" style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>
+                  NAMA BARANG *:
                 </label>
                 <input
                   type="text"
                   required
                   className="input"
-                  placeholder="Contoh: The Red Mist Key Page / Primogems 5000 / Roblox Robux"
+                  placeholder="Contoh: Faust 000 Identity / Primogems / Akun Starter"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 />
               </div>
 
               <div>
-                <label className="mono" style={{ fontSize: '0.74rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>
+                <label className="mono" style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>
                   KATEGORI GAME *:
                 </label>
                 <select
@@ -483,11 +701,38 @@ export function AdminModal({ onClose, editingItem, setEditingItem }) {
               </div>
             </div>
 
-            {/* Row 2: Threat Level, Price, Currency, Stock */}
+            {/* Price, Stock, Threat, Tag */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '12px' }}>
               <div>
-                <label className="mono" style={{ fontSize: '0.74rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>
-                  THREAT LEVEL / RARITY:
+                <label className="mono" style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>
+                  HARGA BARANG (RP) *:
+                </label>
+                <input
+                  type="number"
+                  required
+                  min="0"
+                  className="input"
+                  value={formData.price}
+                  onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
+                />
+              </div>
+
+              <div>
+                <label className="mono" style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>
+                  JUMLAH STOK:
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  className="input"
+                  value={formData.stock}
+                  onChange={(e) => setFormData({ ...formData, stock: Number(e.target.value) })}
+                />
+              </div>
+
+              <div>
+                <label className="mono" style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>
+                  KELANGKAAN / TIER:
                 </label>
                 <select
                   className="select"
@@ -501,75 +746,35 @@ export function AdminModal({ onClose, editingItem, setEditingItem }) {
               </div>
 
               <div>
-                <label className="mono" style={{ fontSize: '0.74rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>
-                  HARGA / VALUE *:
-                </label>
-                <input
-                  type="number"
-                  required
-                  min="0"
-                  className="input"
-                  value={formData.price}
-                  onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
-                />
-              </div>
-
-              <div>
-                <label className="mono" style={{ fontSize: '0.74rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>
-                  MATA UANG:
+                <label className="mono" style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>
+                  TAG / LABEL:
                 </label>
                 <input
                   type="text"
                   className="input"
-                  placeholder="Rp / Lunacy / $"
-                  value={formData.currency}
-                  onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
-                />
-              </div>
-
-              <div>
-                <label className="mono" style={{ fontSize: '0.74rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>
-                  STOK UNIT:
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  className="input"
-                  value={formData.stock}
-                  onChange={(e) => setFormData({ ...formData, stock: Number(e.target.value) })}
-                />
-              </div>
-
-              <div>
-                <label className="mono" style={{ fontSize: '0.74rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>
-                  TAG / TIPE:
-                </label>
-                <input
-                  type="text"
-                  className="input"
-                  placeholder="E.G.O, Akun, Jasa, Skin"
+                  placeholder="Akun, Senjata, Topup, Jasa"
                   value={formData.tag}
                   onChange={(e) => setFormData({ ...formData, tag: e.target.value })}
                 />
               </div>
             </div>
 
-            {/* Row 3: Image URL or File Upload */}
+            {/* Image (URL or Direct Upload from device) */}
             <div>
-              <label className="mono" style={{ fontSize: '0.74rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>
-                GAMBAR ITEM (URL ATAU UPLOAD LANGSUNG DARI PERANGKAT):
+              <label className="mono" style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>
+                GAMBAR BARANG (PASTE LINK URL ATAU UPLOAD DARI HP/PC):
               </label>
               <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
                 <input
                   type="text"
                   className="input"
-                  placeholder="https://... atau paste link gambar"
+                  placeholder="https://... link gambar atau klik upload"
                   value={formData.image}
                   onChange={(e) => setFormData({ ...formData, image: e.target.value })}
                 />
                 <label className="btn btn-sm" style={{ cursor: 'pointer', whiteSpace: 'nowrap' }}>
                   <Upload size={14} />
-                  <span>UPLOAD FILE</span>
+                  <span>UPLOAD FOTO</span>
                   <input
                     type="file"
                     accept="image/*"
@@ -580,127 +785,46 @@ export function AdminModal({ onClose, editingItem, setEditingItem }) {
               </div>
 
               {formData.image && (
-                <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <img
                     src={formData.image}
                     alt="Preview"
-                    style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: '2px', border: '1px solid var(--border-color)' }}
+                    style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: '4px', border: '1px solid var(--border-color)' }}
                   />
                   <span className="mono" style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
-                    Preview Gambar Siap Tampil
+                    Preview Gambar Siap Digunakan
                   </span>
                 </div>
               )}
             </div>
 
-            {/* Row 4: Description */}
+            {/* Description */}
             <div>
-              <label className="mono" style={{ fontSize: '0.74rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>
-                DESKRIPSI / LORE / KETERANGAN ITEM:
+              <label className="mono" style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>
+                DESKRIPSI / KETERANGAN BARANG:
               </label>
               <textarea
                 className="textarea"
                 rows="3"
-                placeholder="Jelaskan spesifikasi item, kelebihan, efek pertarungan, atau detail akun..."
+                placeholder="Jelaskan spesifikasi, kelebihan, efek item, atau ketentuan akun..."
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               />
             </div>
 
-            {/* Row 5: Delivery Method */}
+            {/* Delivery Method */}
             <div>
-              <label className="mono" style={{ fontSize: '0.74rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>
+              <label className="mono" style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>
                 CARA PENGIRIMAN KE PEMBELI:
               </label>
               <input
                 type="text"
                 className="input"
-                placeholder="Contoh: Login via UID tanpa password / Trade in-game Steam / Data akun via chat"
+                placeholder="Contoh: Pengiriman data akun via WhatsApp setelah transfer"
                 value={formData.deliveryMethod}
                 onChange={(e) => setFormData({ ...formData, deliveryMethod: e.target.value })}
               />
             </div>
-
-            {/* Row 6: Custom Properties Key-Value Pairs */}
-            <div style={{
-              background: 'var(--bg-primary)',
-              border: '1px solid var(--border-color)',
-              padding: '12px',
-              borderRadius: 'var(--radius-sm)'
-            }}>
-              <label className="mono" style={{ fontSize: '0.74rem', color: 'var(--accent-secondary)', display: 'block', marginBottom: '6px' }}>
-                // SPESIFIKASI TAMBAHAN (METADATA):
-              </label>
-              
-              <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
-                <input
-                  type="text"
-                  className="input"
-                  placeholder="Label (contoh: Faction)"
-                  value={newPropKey}
-                  onChange={(e) => setNewPropKey(e.target.value)}
-                  style={{ flex: 1 }}
-                />
-                <input
-                  type="text"
-                  className="input"
-                  placeholder="Nilai (contoh: N Corp. / Level 5)"
-                  value={newPropVal}
-                  onChange={(e) => setNewPropVal(e.target.value)}
-                  style={{ flex: 1 }}
-                />
-                <button
-                  type="button"
-                  onClick={handleAddProperty}
-                  className="btn btn-sm"
-                >
-                  <Plus size={14} />
-                  <span>TAMBAH</span>
-                </button>
-              </div>
-
-              {formData.properties && formData.properties.length > 0 && (
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                  {formData.properties.map((p, idx) => (
-                    <span
-                      key={idx}
-                      style={{
-                        background: 'var(--bg-tertiary)',
-                        border: '1px solid var(--border-color)',
-                        padding: '3px 8px',
-                        fontSize: '0.72rem',
-                        borderRadius: '2px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '6px'
-                      }}
-                    >
-                      <strong style={{ color: 'var(--accent-primary)' }}>{p.label}:</strong> {p.value}
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveProperty(idx)}
-                        style={{ background: 'transparent', border: 'none', color: '#ff2a44', cursor: 'pointer' }}
-                      >
-                        ×
-                      </button>
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Featured toggle */}
-            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-              <input
-                type="checkbox"
-                checked={formData.featured}
-                onChange={(e) => setFormData({ ...formData, featured: e.target.checked })}
-                style={{ accentColor: 'var(--accent-primary)' }}
-              />
-              <span className="mono" style={{ fontSize: '0.8rem' }}>
-                Tandai sebagai Item Unggulan (Featured Highlight)
-              </span>
-            </label>
 
             {/* Save Buttons */}
             <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
@@ -710,7 +834,7 @@ export function AdminModal({ onClose, editingItem, setEditingItem }) {
                 style={{ padding: '10px 24px', flex: 1 }}
               >
                 <Save size={16} />
-                <span>{editingItem ? 'SIMPAN PERUBAHAN ITEM' : 'SIMPAN ITEM KE INVENTARIS'}</span>
+                <span>{editingItem ? 'SIMPAN PERUBAHAN BARANG' : 'SIMPAN BARANG KE KATALOG'}</span>
               </button>
 
               <button
@@ -718,39 +842,39 @@ export function AdminModal({ onClose, editingItem, setEditingItem }) {
                 onClick={() => setActiveTab('items-list')}
                 className="btn"
               >
-                KEMBALI KE DAFTAR
+                KEMBALI
               </button>
             </div>
           </form>
         )}
 
-        {/* Tab 3: CATEGORIES / GAMES MANAGER */}
+        {/* TAB 4: CATEGORIES / GAME MANAGER */}
         {activeTab === 'categories' && (
           <div style={{ padding: '20px' }}>
             <h3 className="serif-title" style={{ fontSize: '1.1rem', color: 'var(--text-main)', marginBottom: '8px' }}>
-              KELOLA KATEGORI GAME YANG DIMAINKAN
+              KELOLA KATEGORI GAME
             </h3>
             <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: '16px' }}>
-              Kamu bisa menambahkan game baru apa saja (misal: Valorant, Genshin Impact, Roblox, Steam, dll).
+              Admin dapat menambahkan kategori game baru (misal: Valorant, Genshin, Roblox, dll) atau menghapus kategori yang tidak digunakan.
             </p>
 
-            {/* Add New Game Form */}
+            {/* Add Game Form */}
             <form onSubmit={handleAddGameCategory} style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
               <input
                 type="text"
                 className="input"
-                placeholder="Ketik nama game baru (contoh: Roblox / CS2 / Blue Archive)..."
+                placeholder="Ketik nama game baru (contoh: Roblox / Honkai / Valorant)..."
                 value={newGameInput}
                 onChange={(e) => setNewGameInput(e.target.value)}
                 style={{ flex: 1 }}
               />
               <button type="submit" className="btn btn-primary">
                 <Plus size={16} />
-                <span>TAMBAH GAME</span>
+                <span>TAMBAH KATEGORI</span>
               </button>
             </form>
 
-            {/* Game List */}
+            {/* Categories List */}
             <div style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
@@ -773,7 +897,7 @@ export function AdminModal({ onClose, editingItem, setEditingItem }) {
                   >
                     <div>
                       <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text-main)' }}>
-                        {g}
+                        🎮 {g}
                       </div>
                       <div className="mono" style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
                         {count} item terdaftar
@@ -783,7 +907,7 @@ export function AdminModal({ onClose, editingItem, setEditingItem }) {
                     <button
                       onClick={() => {
                         if (count > 0) {
-                          if (!window.confirm(`Ada ${count} item dalam kategori "${g}". Tetap ingin menghapus kategori ini?`)) {
+                          if (!window.confirm(`Ada ${count} item di dalam kategori "${g}". Tetap ingin menghapus kategori ini?`)) {
                             return;
                           }
                         }
@@ -801,17 +925,77 @@ export function AdminModal({ onClose, editingItem, setEditingItem }) {
           </div>
         )}
 
-        {/* Tab 4: STORE PROFILE & CONTACT SETTINGS */}
+        {/* TAB 5: DISCORD WEBHOOK & STORE SETTINGS */}
         {activeTab === 'profile' && (
-          <form onSubmit={handleSaveProfile} style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-            <h3 className="serif-title" style={{ fontSize: '1.1rem', color: 'var(--text-main)' }}>
-              PENGATURAN INFORMASI TOKO & KONTAK PENJUAL
-            </h3>
+          <form onSubmit={handleSaveProfile} style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div>
+              <h3 className="serif-title" style={{ fontSize: '1.15rem', color: 'var(--text-main)', marginBottom: '4px' }}>
+                PENGATURAN DISCORD WEBHOOK & KONTAK TOKO
+              </h3>
+              <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
+                Setiap kali pembeli melakukan checkout, notifikasi otomatis akan dikirim ke server Discord kamu.
+              </p>
+            </div>
 
+            {/* Discord Webhook Section */}
+            <div style={{
+              background: 'rgba(114, 137, 218, 0.08)',
+              border: '1px solid rgba(114, 137, 218, 0.3)',
+              padding: '16px',
+              borderRadius: 'var(--radius-sm)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '10px'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#7289da' }}>
+                <Bell size={18} />
+                <span className="mono" style={{ fontWeight: 700, fontSize: '0.86rem' }}>
+                  DISCORD WEBHOOK URL (NOTIFIKASI ORDER OTOMATIS):
+                </span>
+              </div>
+
+              <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: '1.4' }}>
+                Cara buat webhook: Buka Server Discord kamu &gt; Klik kanan Channel &gt; Edit Channel &gt; Integrations &gt; Webhooks &gt; New Webhook &gt; Salin Webhook URL lalu paste di bawah.
+              </p>
+
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                <input
+                  type="text"
+                  className="input"
+                  placeholder="https://discord.com/api/webhooks/..."
+                  value={profileForm.discordWebhook || ''}
+                  onChange={(e) => setProfileForm({ ...profileForm, discordWebhook: e.target.value })}
+                  style={{ flex: 1 }}
+                />
+                <button
+                  type="button"
+                  onClick={handleTestWebhook}
+                  disabled={testingWebhook}
+                  className="btn btn-sm"
+                  style={{ borderColor: '#7289da', color: '#7289da', whiteSpace: 'nowrap' }}
+                >
+                  <Send size={13} />
+                  <span>{testingWebhook ? "MENGIRIM..." : "TES WEBHOOK"}</span>
+                </button>
+              </div>
+
+              {webhookTestResult && (
+                <div style={{
+                  fontSize: '0.78rem',
+                  fontFamily: 'var(--font-mono)',
+                  color: webhookTestResult.success ? '#10b981' : '#ff2a44',
+                  marginTop: '4px'
+                }}>
+                  {webhookTestResult.message}
+                </div>
+              )}
+            </div>
+
+            {/* Store Name & Subtitle */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
               <div>
-                <label className="mono" style={{ fontSize: '0.74rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>
-                  NAMA TOKO / MERCHANT:
+                <label className="mono" style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>
+                  NAMA TOKO:
                 </label>
                 <input
                   type="text"
@@ -822,8 +1006,8 @@ export function AdminModal({ onClose, editingItem, setEditingItem }) {
               </div>
 
               <div>
-                <label className="mono" style={{ fontSize: '0.74rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>
-                  SUBTITLE / SLOGAN:
+                <label className="mono" style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>
+                  SLOGAN / SUBTITLE:
                 </label>
                 <input
                   type="text"
@@ -834,50 +1018,53 @@ export function AdminModal({ onClose, editingItem, setEditingItem }) {
               </div>
             </div>
 
+            {/* WhatsApp & Discord tag */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
               <div>
-                <label className="mono" style={{ fontSize: '0.74rem', color: '#25d366', display: 'block', marginBottom: '4px' }}>
-                  NOMOR WHATSAPP (UNTUK MENERIMA ORDER):
+                <label className="mono" style={{ fontSize: '0.75rem', color: '#25d366', display: 'block', marginBottom: '4px' }}>
+                  NOMOR WHATSAPP PENERIMA ORDER *:
                 </label>
                 <input
                   type="text"
                   className="input"
-                  placeholder="Contoh: 6281234567890 (Gunakan kode 62)"
+                  placeholder="Contoh: 628123456789 (Awali dengan kode 62)"
                   value={profileForm.whatsapp}
                   onChange={(e) => setProfileForm({ ...profileForm, whatsapp: e.target.value })}
                 />
               </div>
 
               <div>
-                <label className="mono" style={{ fontSize: '0.74rem', color: '#7289da', display: 'block', marginBottom: '4px' }}>
-                  USERNAME DISCORD / SERVER:
+                <label className="mono" style={{ fontSize: '0.75rem', color: '#7289da', display: 'block', marginBottom: '4px' }}>
+                  DISCORD TAG / USERNAME:
                 </label>
                 <input
                   type="text"
                   className="input"
-                  placeholder="Contoh: username#0001"
+                  placeholder="Contoh: faust_store#0001"
                   value={profileForm.discord}
                   onChange={(e) => setProfileForm({ ...profileForm, discord: e.target.value })}
                 />
               </div>
             </div>
 
+            {/* Announcement */}
             <div>
-              <label className="mono" style={{ fontSize: '0.74rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>
-                PESAN PENGUMUMAN OVERSEER / TICKER TOKO:
+              <label className="mono" style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>
+                PENGUMUMAN TOKO:
               </label>
               <input
                 type="text"
                 className="input"
-                placeholder="Pemberitahuan darurat / jam online / jaminan..."
+                placeholder="Pesan banner di bagian atas..."
                 value={profileForm.announcement}
                 onChange={(e) => setProfileForm({ ...profileForm, announcement: e.target.value })}
               />
             </div>
 
+            {/* Payment Methods */}
             <div>
-              <label className="mono" style={{ fontSize: '0.74rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>
-                METODE PEMBAYARAN YANG DITERIMA (PISAH DENGAN KOMA):
+              <label className="mono" style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>
+                METODE PEMBAYARAN (PISAH DENGAN KOMA):
               </label>
               <input
                 type="text"
@@ -890,21 +1077,20 @@ export function AdminModal({ onClose, editingItem, setEditingItem }) {
               />
             </div>
 
-            <button type="submit" className="btn btn-primary" style={{ marginTop: '10px' }}>
+            <button type="submit" className="btn btn-primary" style={{ marginTop: '6px' }}>
               <Save size={16} />
-              <span>SIMPAN PENGATURAN TOKO</span>
+              <span>SIMPAN PENGATURAN & WEBHOOK</span>
             </button>
           </form>
         )}
 
-        {/* Tab 5: BACKUP & VERCEL HOSTING */}
+        {/* TAB 6: BACKUP */}
         {activeTab === 'backup' && (
           <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <h3 className="serif-title" style={{ fontSize: '1.1rem', color: 'var(--text-main)' }}>
-              MANAJEMEN DATA & PANDUAN HOSTING DI VERCEL
+              BACKUP & RESTORE DATA INVENTARIS
             </h3>
 
-            {/* Quick Export / Import Buttons */}
             <div style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
@@ -920,7 +1106,7 @@ export function AdminModal({ onClose, editingItem, setEditingItem }) {
                   💾 EXPORT DATABASE
                 </h4>
                 <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: '12px' }}>
-                  Unduh seluruh item dan pengaturan toko kamu sebagai file JSON untuk backup.
+                  Unduh seluruh daftar barang, pesanan, dan pengaturan sebagai file JSON.
                 </p>
                 <button
                   type="button"
@@ -940,10 +1126,10 @@ export function AdminModal({ onClose, editingItem, setEditingItem }) {
                 borderRadius: 'var(--radius-sm)'
               }}>
                 <h4 className="mono" style={{ color: '#10b981', marginBottom: '8px' }}>
-                  📥 RESTORE / IMPORT DATABASE
+                  📥 RESTORE DATABASE
                 </h4>
                 <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: '12px' }}>
-                  Pulihkan inventaris dari file backup JSON yang pernah diunduh.
+                  Upload file JSON untuk mengembalikan data toko.
                 </p>
                 <label className="btn btn-sm" style={{ width: '100%', cursor: 'pointer', textAlign: 'center' }}>
                   <Upload size={14} />
@@ -951,7 +1137,22 @@ export function AdminModal({ onClose, editingItem, setEditingItem }) {
                   <input
                     type="file"
                     accept=".json"
-                    onChange={handleImportFile}
+                    onChange={(e) => {
+                      const file = e.target.files[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (ev) => {
+                          const res = importDatabaseJSON(ev.target.result);
+                          if (res.success) {
+                            setImportStatus("Import database berhasil!");
+                            setTimeout(() => setImportStatus(null), 3000);
+                          } else {
+                            setImportStatus(`Gagal: ${res.error}`);
+                          }
+                        };
+                        reader.readAsText(file);
+                      }
+                    }}
                     style={{ display: 'none' }}
                   />
                 </label>
@@ -972,7 +1173,7 @@ export function AdminModal({ onClose, editingItem, setEditingItem }) {
                   ⚠️ RESET DEFAULT
                 </h4>
                 <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: '12px' }}>
-                  Kembalikan toko ke data awal (Limbus Company, Ruina, Lobotomy, SCP).
+                  Kembalikan toko ke pengaturan dan barang bawaan awal.
                 </p>
                 <button
                   type="button"
@@ -985,41 +1186,9 @@ export function AdminModal({ onClose, editingItem, setEditingItem }) {
                   style={{ width: '100%' }}
                 >
                   <RotateCcw size={14} />
-                  <span>RESET KE FACTORY DEFAULT</span>
+                  <span>RESET KE DEFAULT</span>
                 </button>
               </div>
-            </div>
-
-            {/* Vercel Hosting Tutorial Card */}
-            <div style={{
-              background: 'var(--bg-tertiary)',
-              borderLeft: '4px solid var(--accent-secondary)',
-              borderTop: '1px solid var(--border-color)',
-              borderRight: '1px solid var(--border-color)',
-              borderBottom: '1px solid var(--border-color)',
-              padding: '16px',
-              borderRadius: '0 4px 4px 0'
-            }}>
-              <h4 className="serif-title" style={{ color: 'var(--accent-secondary)', marginBottom: '8px' }}>
-                🚀 CARA DEPLOY KE VERCEL (GRATIS & KILAT)
-              </h4>
-              <ol style={{ fontSize: '0.84rem', color: 'var(--text-main)', paddingLeft: '20px', lineHeight: '1.7' }}>
-                <li>
-                  Push folder proyek ini ke <strong>GitHub</strong> kamu (bisa via GitHub Desktop atau git push).
-                </li>
-                <li>
-                  Buka website <a href="https://vercel.com" target="_blank" rel="noreferrer" style={{ color: 'var(--accent-primary)' }}>vercel.com</a> dan login dengan akun GitHub kamu.
-                </li>
-                <li>
-                  Klik tombol <strong>"Add New Project"</strong>, lalu pilih repository GitHub toko ini.
-                </li>
-                <li>
-                  Framework Preset akan otomatis terdeteksi sebagai <strong>Vite</strong>. Cukup klik tombol <strong>"Deploy"</strong>!
-                </li>
-                <li>
-                  Dalam 1 menit, website toko kamu sudah live dengan domain gratis seperti <code>nama-toko.vercel.app</code> dan siap dibagikan ke calon pembeli!
-                </li>
-              </ol>
             </div>
 
           </div>

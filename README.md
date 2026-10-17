@@ -1,82 +1,50 @@
-# ⚡ THE REQUISITION WING // L-CORP, RUINA & SCP MERCHANT VAULT
+# ⚡ FAUST STORE // IN-GAME ITEM & SERVICE MERCHANT
 
-Website toko / merchant etalase item in-game lintas semesta yang dirancang khusus untuk memamerkan dan menjual item-item game kamu dengan estetika atmosferik **Limbus Company**, **Library of Ruina**, **Lobotomy Corporation**, dan **SCP Foundation**.
+Website toko dan etalase merchant item in-game modern yang menggabungkan estetika atmosferik **Limbus Company, Library of Ruina, Lobotomy Corporation, dan SCP Foundation**. Dirancang agar mudah dipahami oleh pembeli biasa, dilengkapi dengan **Panel Admin lengkap, Notifikasi Discord Webhooks, dan Order List pelanggan tanpa perlu registrasi akun**.
 
-Proyek ini dibuat menggunakan **React + Vite** yang sangat ringan, cepat, dan 100% siap di-hosting langsung di **Vercel** secara gratis.
-
----
-
-## 🌟 Fitur Utama
-
-1. **4 Tema Interaktif (Project Moon & SCP Universe)**:
-   - 🩸 **Limbus Company**: Dominasi warna Crimson Red, Dante Clock motif, dan Mephistopheles dark slate.
-   - ⚠️ **Lobotomy Corporation**: Hazard Amber, industrial warning hazard stripes, dan CRT green monitor.
-   - 📖 **Library of Ruina**: Deep Midnight Blue, Book of Light gold, dan Angela cyan.
-   - 🛡️ **SCP Foundation**: Tactical Terminal Monochrome, O5 Council clearance red accents, dan redacted classification.
-
-2. **Pengelompokan & Filter Berdasarkan Game yang Dimainkan**:
-   - Filter cepat berdasarkan game: *Limbus Company*, *Library of Ruina*, *Lobotomy Corp*, *SCP Foundation*, *Genshin Impact*, *Honkai*, *Roblox*, *CS2*, dll.
-   - Filter tingkat bahaya/kelangkaan (Threat Level): **ALEPH, WAW, HE, TETH, ZAYIN** (Project Moon) & **KETER, EUCLID, SAFE** (SCP Foundation).
-   - Pencarian instan (nama item, tag, spesifikasi, dan deskripsi).
-   - Filter ketersediaan stok & pengurutan harga.
-
-3. **Panel Admin / Overseer Console (Bisa Isi & Edit Barang Sendiri)**:
-   - Klik tombol **"KELOLA BARANG"** di pojok kanan atas untuk membuka terminal admin.
-   - **Tambah Item Baru**: Nama item, pilih game (atau buat game baru), threat level, harga, stok, upload gambar langsung dari HP/PC atau via link URL, deskripsi lore, dan metadata spesifikasi (misal: Faction, Tipe Damage, Garansi).
-   - **Edit & Hapus Item**: Langsung perbarui stok atau harga tanpa perlu menyentuh kode.
-   - **Kelola Kategori Game**: Tambahkan game baru apa saja yang sedang kamu mainkan.
-   - **Pengaturan Toko & Kontak**: Ubah Nama Toko, No WhatsApp penerima order, username Discord, pengumuman darurat, dan metode pembayaran (QRIS, BCA, DANA, GoPay, dll).
-
-4. **Sistem Pemesanan Langsung (Instant Checkout)**:
-   - **Order via WhatsApp**: Otomatis membuat format chat rapi berisikan nama barang, jumlah, game, total harga, dan metode pembayaran yang siap dikirim langsung ke WhatsApp kamu.
-   - **Salin Tiket Discord**: Menghasilkan format kode markdown rapi yang siap di-paste ke channel tiket / DM Discord.
-
-5. **Efek Suara Terminal (Synthesized Web Audio API)**:
-   - Efek suara klik mekanikal, alarm anomali, dan glitch tanpa perlu download file audio luar (ringan dan tanpa delay). Bisa di-mute kapan saja dengan tombol volume.
-
-6. **Backup & Restore Data (JSON)**:
-   - Export seluruh katalog item kamu ke file `.json`.
-   - Restore kembali kapan pun jika berpindah perangkat atau browser.
+Proyek ini dibuat menggunakan **React + Vite** dan 100% siap di-hosting langsung di **Vercel**.
 
 ---
 
-## 🚀 Cara Menjalankan di Komputer Lokal
+## 🌟 Fitur Baru
 
-1. Buka terminal di folder proyek:
-   ```bash
-   npm install
-   npm run dev
-   ```
-2. Buka link lokal yang muncul di terminal (biasanya `http://localhost:5173`).
+1. **Nama Toko: Faust Store**:
+   - Branding terpadu dengan palet warna khas Faust: *Deep Obsidian*, *Faust Crimson*, dan *Clockwork Gold*.
+   - Tidak ada lagi tombol pengubah tema yang membingungkan; tampilan langsung konsisten, rapi, dan mudah dibaca oleh siapa saja.
+
+2. **Pembelian Tanpa Perlu Buat Akun (Guest Checkout)**:
+   - Pelanggan tidak perlu repot daftar akun atau login.
+   - Cukup pilih barang -> masukkan ke Keranjang -> isi Nama & No. WhatsApp -> klik **"Konfirmasi Pesanan"**.
+
+3. **Daftar Pesanan Masuk (Order List untuk Admin)**:
+   - Setiap transaksi yang dilakukan pembeli akan langsung masuk ke tab **"PESANAN MASUK"** di Panel Admin.
+   - Admin bisa melihat nomor order, nama pembeli, nomor WhatsApp (ada tombol 1-klik untuk langsung chat WA pembeli), daftar barang yang dibeli, total harga, metode pembayaran, dan catatan.
+   - Admin bisa mengubah status pesanan (*Pending*, *Selesai*, atau *Dibatalkan*).
+
+4. **Notifikasi Otomatis via Discord Webhooks**:
+   - Admin dapat memasukkan URL Discord Webhook di tab pengaturan panel admin.
+   - Setiap kali ada pesanan baru dari pelanggan, bot Faust Store akan otomatis mengirimkan notifikasi rincian pesanan berformat embed rapi ke channel server Discord admin.
+   - Tersedia tombol **"Tes Webhook"** untuk memastikan bot terhubung dengan benar.
+
+5. **Panel Admin Lengkap (Kelola Sendiri)**:
+   - **Kelola Barang**: Ubah nama barang, harga (Rp), jumlah stok, tier/kelangkaan, upload foto langsung dari HP/PC atau via link URL, dan deskripsi barang.
+   - **Kelola Kategori Game**: Tambahkan kategori game baru (misal: *Genshin*, *Roblox*, *Valorant*, dll) atau hapus kategori game yang tidak diperlukan.
+   - **Pengaturan Toko & Kontak**: Ubah nomor WhatsApp admin, username Discord, pengumuman toko, dan metode pembayaran (QRIS, BCA, DANA, GoPay, dll).
+   - **Backup & Restore (JSON)**: Simpan seluruh data inventaris dan pesanan ke file `.json`.
 
 ---
 
-## 🌐 Cara Deploy / Hosting ke Vercel (Gratis)
+## 🚀 Menjalankan Secara Lokal
 
-Website ini sudah dilengkapi dengan konfigurasi `vercel.json` sehingga langsung bisa di-deploy:
-
-1. **Upload folder ini ke GitHub**:
-   - Buat repository baru di [GitHub](https://github.com).
-   - Upload / push semua file proyek ke repository tersebut.
-2. **Buka Vercel**:
-   - Masuk ke [vercel.com](https://vercel.com) dan login dengan akun GitHub kamu.
-   - Klik **"Add New Project"** dan pilih repository yang baru kamu buat.
-3. **Deploy**:
-   - Framework preset akan otomatis terdeteksi sebagai **Vite**.
-   - Klik tombol **"Deploy"**.
-4. Selesai! Dalam ~1 menit toko kamu sudah aktif dengan link seperti `https://nama-toko-kamu.vercel.app`.
+```bash
+npm install
+npm run dev
+```
+Buka browser di `http://localhost:5173/`.
 
 ---
 
-## 📂 Struktur File Utama
+## 🌐 Deploy Otomatis ke Vercel
 
-- `src/data/defaultData.js` : Database bawaan item, kategori game, threat level, dan profil toko.
-- `src/context/CatalogContext.jsx` : State management inventaris & sinkronisasi localStorage.
-- `src/components/Header.jsx` : Navigasi atas, pengubah tema, audio toggle, dan tombol keranjang.
-- `src/components/Banner.jsx` : Banner status terminal, pengumuman broadcast, dan badge pembayaran.
-- `src/components/FilterBar.jsx` : Tab kategori game, search bar, dan filter kelangkaan.
-- `src/components/ItemCard.jsx` : Kartu item anomali dengan badge threat level dan indikator stok.
-- `src/components/ItemModal.jsx` : Dossier detail spesifikasi item dan tombol beli langsung.
-- `src/components/CartModal.jsx` : Manifest keranjang belanja & generator pesan WhatsApp/Discord.
-- `src/components/AdminModal.jsx` : Panel admin untuk tambah/edit item, game, kontak, dan backup.
-- `src/utils/soundEffects.js` : Generator audio Web Audio API atmosferik.
+Karena repository ini sudah terhubung ke GitHub `Faust-Store`:
+Setiap kali ada commit baru yang di-push ke GitHub, Vercel akan **otomatis melakukan build dan update website secara live** dalam hitungan detik!

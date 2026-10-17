@@ -1,16 +1,17 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { DEFAULT_ITEMS, DEFAULT_GAMES, DEFAULT_MERCHANT_PROFILE } from '../data/defaultData';
+import { DEFAULT_ITEMS, DEFAULT_GAMES, DEFAULT_MERCHANT_PROFILE, DEFAULT_ORDERS } from '../data/defaultData';
 import { soundEffects } from '../utils/soundEffects';
+import { sendDiscordOrderNotification } from '../utils/discordWebhook';
 
 const CatalogContext = createContext(null);
 
 const STORAGE_KEYS = {
-  ITEMS: 'pm_scp_catalog_items_v2',
-  GAMES: 'pm_scp_catalog_games_v2',
-  PROFILE: 'pm_scp_catalog_profile_v2',
-  CART: 'pm_scp_catalog_cart_v2',
-  THEME: 'pm_scp_catalog_theme_v2',
-  SOUND: 'pm_scp_catalog_sound_v2'
+  ITEMS: 'faust_store_items_v3',
+  GAMES: 'faust_store_games_v3',
+  PROFILE: 'faust_store_profile_v3',
+  CART: 'faust_store_cart_v3',
+  ORDERS: 'faust_store_orders_v3',
+  SOUND: 'faust_store_sound_v3'
 };
 
 export function CatalogProvider({ children }) {
@@ -36,7 +37,7 @@ export function CatalogProvider({ children }) {
     return DEFAULT_GAMES;
   });
 
-  // Merchant Profile State
+  // Merchant Profile State (includes WhatsApp, Discord webhook, etc.)
   const [merchantProfile, setMerchantProfile] = useState(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEYS.PROFILE);
@@ -47,7 +48,18 @@ export function CatalogProvider({ children }) {
     return DEFAULT_MERCHANT_PROFILE;
   });
 
-  // Cart State
+  // Customer Orders List (Visible to Admin, no customer login required)
+  const [orders, setOrders] = useState(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.ORDERS);
+      if (saved) return JSON.parse(saved);
+    } catch {
+      // ignore
+    }
+    return DEFAULT_ORDERS;
+  });
+
+  // Shopping Cart State
   const [cart, setCart] = useState(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEYS.CART);
@@ -56,17 +68,6 @@ export function CatalogProvider({ children }) {
       // ignore
     }
     return [];
-  });
-
-  // Theme State ("limbus", "lobotomy", "ruina", "scp")
-  const [theme, setTheme] = useState(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEYS.THEME);
-      if (saved) return saved;
-    } catch {
-      // ignore
-    }
-    return merchantProfile.activeTheme || 'limbus';
   });
 
   // Sound effects toggle
@@ -85,7 +86,7 @@ export function CatalogProvider({ children }) {
     try {
       localStorage.setItem(STORAGE_KEYS.ITEMS, JSON.stringify(items));
     } catch (e) {
-      console.warn("Storage quota exceeded or error", e);
+      console.warn("Storage quota error", e);
     }
   }, [items]);
 
@@ -93,7 +94,7 @@ export function CatalogProvider({ children }) {
     try {
       localStorage.setItem(STORAGE_KEYS.GAMES, JSON.stringify(games));
     } catch (e) {
-      console.warn("Storage error", e);
+      console.warn("Storage quota error", e);
     }
   }, [games]);
 
@@ -101,26 +102,25 @@ export function CatalogProvider({ children }) {
     try {
       localStorage.setItem(STORAGE_KEYS.PROFILE, JSON.stringify(merchantProfile));
     } catch (e) {
-      console.warn("Storage error", e);
+      console.warn("Storage quota error", e);
     }
   }, [merchantProfile]);
 
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEYS.CART, JSON.stringify(cart));
+      localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(orders));
     } catch (e) {
-      console.warn("Storage error", e);
+      console.warn("Storage quota error", e);
     }
-  }, [cart]);
+  }, [orders]);
 
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEYS.THEME, theme);
-      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem(STORAGE_KEYS.CART, JSON.stringify(cart));
     } catch (e) {
-      console.warn("Storage error", e);
+      console.warn("Storage quota error", e);
     }
-  }, [theme]);
+  }, [cart]);
 
   useEffect(() => {
     try {
@@ -148,17 +148,11 @@ export function CatalogProvider({ children }) {
     if (next) soundEffects.playBeep();
   };
 
-  // Switch Theme
-  const changeTheme = (newTheme) => {
-    playSound('hazard');
-    setTheme(newTheme);
-  };
-
   // Item Management (CRUD)
   const addItem = (itemData) => {
     const newItem = {
       ...itemData,
-      id: `item-custom-${Date.now()}`
+      id: `item-${Date.now()}`
     };
     setItems((prev) => [newItem, ...prev]);
     playSound('equip');
@@ -197,6 +191,41 @@ export function CatalogProvider({ children }) {
     playSound('beep');
   };
 
+  // Orders Management (Customer checkout & Admin inspection)
+  const createOrder = async (orderPayload) => {
+    const newOrder = {
+      ...orderPayload,
+      id: `ORD-${Math.floor(100000 + Math.random() * 900000)}`,
+      status: 'Pending',
+      createdAt: new Date().toISOString()
+    };
+
+    // Save to orders state
+    setOrders((prev) => [newOrder, ...prev]);
+    clearCart();
+    playSound('equip');
+
+    // Trigger Discord Webhook Notification if configured
+    if (merchantProfile.discordWebhook) {
+      sendDiscordOrderNotification(merchantProfile.discordWebhook, newOrder)
+        .catch((err) => console.error("Error sending webhook:", err));
+    }
+
+    return newOrder;
+  };
+
+  const updateOrderStatus = (orderId, status) => {
+    setOrders((prev) =>
+      prev.map((ord) => (ord.id === orderId ? { ...ord, status } : ord))
+    );
+    playSound('beep');
+  };
+
+  const deleteOrder = (orderId) => {
+    setOrders((prev) => prev.filter((ord) => ord.id !== orderId));
+    playSound('glitch');
+  };
+
   // Cart Management
   const addToCart = (item) => {
     playSound('equip');
@@ -232,7 +261,6 @@ export function CatalogProvider({ children }) {
   };
 
   const clearCart = () => {
-    playSound('glitch');
     setCart([]);
   };
 
@@ -241,8 +269,8 @@ export function CatalogProvider({ children }) {
     setItems(DEFAULT_ITEMS);
     setGames(DEFAULT_GAMES);
     setMerchantProfile(DEFAULT_MERCHANT_PROFILE);
+    setOrders(DEFAULT_ORDERS);
     setCart([]);
-    setTheme('limbus');
     playSound('hazard');
   };
 
@@ -252,15 +280,15 @@ export function CatalogProvider({ children }) {
       items,
       games,
       merchantProfile,
-      exportedAt: new Date().toISOString(),
-      formatVersion: "2.0"
+      orders,
+      exportedAt: new Date().toISOString()
     };
     const jsonStr = JSON.stringify(data, null, 2);
     const blob = new Blob([jsonStr], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `inventory_manifest_${Date.now()}.json`;
+    a.download = `faust_store_backup_${Date.now()}.json`;
     a.click();
     URL.revokeObjectURL(url);
     playSound('beep');
@@ -279,6 +307,9 @@ export function CatalogProvider({ children }) {
       if (parsed.merchantProfile && typeof parsed.merchantProfile === 'object') {
         setMerchantProfile((prev) => ({ ...prev, ...parsed.merchantProfile }));
       }
+      if (parsed.orders && Array.isArray(parsed.orders)) {
+        setOrders(parsed.orders);
+      }
       playSound('equip');
       return { success: true };
     } catch (err) {
@@ -293,18 +324,20 @@ export function CatalogProvider({ children }) {
         items,
         games,
         merchantProfile,
+        orders,
         cart,
-        theme,
         soundEnabled,
         playSound,
         toggleSound,
-        changeTheme,
         addItem,
         updateItem,
         deleteItem,
         addCategory,
         deleteCategory,
         updateMerchantProfile,
+        createOrder,
+        updateOrderStatus,
+        deleteOrder,
         addToCart,
         removeFromCart,
         updateCartQuantity,

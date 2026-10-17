@@ -1,7 +1,7 @@
 import React from 'react';
 import { useCatalog } from '../context/CatalogContext';
 import { THREAT_LEVELS } from '../data/defaultData';
-import { ShoppingCart, Eye, Edit3, Trash2, ShieldAlert, Sparkles } from 'lucide-react';
+import { ShoppingCart, Eye, Edit3, Trash2, Sparkles, Check, Package } from 'lucide-react';
 
 export function ItemCard({ item, onInspect, onEdit, isCuratorMode }) {
   const { addToCart, deleteItem, playSound } = useCatalog();
@@ -34,7 +34,7 @@ export function ItemCard({ item, onInspect, onEdit, isCuratorMode }) {
 
   const handleDelete = (e) => {
     e.stopPropagation();
-    if (window.confirm(`Hapus item anomali: "${item.name}" dari inventaris?`)) {
+    if (window.confirm(`Hapus item: "${item.name}"?`)) {
       deleteItem(item.id);
     }
   };
@@ -50,22 +50,22 @@ export function ItemCard({ item, onInspect, onEdit, isCuratorMode }) {
         flexDirection: 'column',
         position: 'relative',
         cursor: 'pointer',
-        transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+        transition: 'all 0.2s ease',
         overflow: 'hidden',
-        boxShadow: '0 4px 15px rgba(0,0,0,0.4)'
+        boxShadow: '0 4px 16px rgba(0,0,0,0.5)'
       }}
       onMouseEnter={(e) => {
         e.currentTarget.style.transform = 'translateY(-3px)';
-        e.currentTarget.style.borderColor = threat.color;
-        e.currentTarget.style.boxShadow = `0 8px 24px ${threat.color}25`;
+        e.currentTarget.style.borderColor = 'var(--accent-primary)';
+        e.currentTarget.style.boxShadow = '0 8px 24px rgba(255, 42, 68, 0.25)';
       }}
       onMouseLeave={(e) => {
         e.currentTarget.style.transform = 'translateY(0)';
         e.currentTarget.style.borderColor = 'var(--border-color)';
-        e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.4)';
+        e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.5)';
       }}
     >
-      {/* Top Header Strip: Threat Rating & Game Category */}
+      {/* Top Strip */}
       <div style={{
         padding: '8px 12px',
         background: 'var(--bg-secondary)',
@@ -73,38 +73,37 @@ export function ItemCard({ item, onInspect, onEdit, isCuratorMode }) {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        fontSize: '0.72rem',
+        fontSize: '0.74rem',
         fontFamily: 'var(--font-mono)'
       }}>
-        {/* Threat Badge */}
+        {/* Game category */}
+        <span style={{ color: 'var(--accent-secondary)', fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '160px' }}>
+          🎮 {item.game}
+        </span>
+
+        {/* Threat / Rarity Badge */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '5px',
+          gap: '4px',
           background: threat.bg,
           border: `1px solid ${threat.border}`,
           color: threat.color,
           padding: '2px 6px',
           borderRadius: '2px',
           fontWeight: 700,
-          letterSpacing: '0.08em'
+          fontSize: '0.68rem'
         }}>
-          <ShieldAlert size={12} />
           <span>{threat.name}</span>
         </div>
-
-        {/* Game Badge */}
-        <span style={{ color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '140px' }}>
-          {item.game}
-        </span>
       </div>
 
-      {/* Item Image / Hologram Preview Container */}
+      {/* Item Image */}
       <div style={{
         position: 'relative',
         width: '100%',
         height: '190px',
-        background: '#050508',
+        background: '#07060a',
         overflow: 'hidden'
       }}>
         <img
@@ -115,29 +114,19 @@ export function ItemCard({ item, onInspect, onEdit, isCuratorMode }) {
             width: '100%',
             height: '100%',
             objectFit: 'cover',
-            transition: 'transform 0.4s ease',
+            transition: 'transform 0.3s ease',
             filter: isOutOfStock ? 'grayscale(80%) brightness(0.6)' : 'none'
           }}
           onMouseEnter={(e) => {
-            if (!isOutOfStock) e.target.style.transform = 'scale(1.06)';
+            if (!isOutOfStock) e.target.style.transform = 'scale(1.05)';
           }}
           onMouseLeave={(e) => {
             e.target.style.transform = 'scale(1)';
           }}
           onError={(e) => {
-            // Fallback image if broken URL
             e.target.src = "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=600&auto=format&fit=crop&q=80";
           }}
         />
-
-        {/* Scanline overlay over image */}
-        <div style={{
-          position: 'absolute',
-          top: 0, left: 0, right: 0, bottom: 0,
-          background: 'linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.4) 50%)',
-          backgroundSize: '100% 3px',
-          pointerEvents: 'none'
-        }} />
 
         {/* Tag pill */}
         {item.tag && (
@@ -145,12 +134,12 @@ export function ItemCard({ item, onInspect, onEdit, isCuratorMode }) {
             position: 'absolute',
             bottom: '8px',
             left: '8px',
-            background: 'rgba(0,0,0,0.75)',
+            background: 'rgba(0,0,0,0.8)',
             border: '1px solid var(--border-color)',
             color: 'var(--text-main)',
-            fontSize: '0.68rem',
+            fontSize: '0.7rem',
             fontFamily: 'var(--font-mono)',
-            padding: '2px 6px',
+            padding: '2px 8px',
             borderRadius: '2px'
           }}>
             {item.tag}
@@ -163,7 +152,7 @@ export function ItemCard({ item, onInspect, onEdit, isCuratorMode }) {
             position: 'absolute',
             top: '8px',
             right: '8px',
-            background: 'rgba(212, 175, 55, 0.9)',
+            background: 'rgba(212, 175, 55, 0.95)',
             color: '#000',
             fontSize: '0.65rem',
             fontFamily: 'var(--font-mono)',
@@ -175,36 +164,35 @@ export function ItemCard({ item, onInspect, onEdit, isCuratorMode }) {
             gap: '3px'
           }}>
             <Sparkles size={10} />
-            <span>FEATURED</span>
+            <span>POPULER</span>
           </div>
         )}
 
-        {/* Out of stock or low stock badge */}
+        {/* Out of Stock Ribbon */}
         {isOutOfStock ? (
           <div style={{
             position: 'absolute',
             top: '50%',
             left: '50%',
-            transform: 'translate(-50%, -50%) rotate(-12deg)',
+            transform: 'translate(-50%, -50%) rotate(-10deg)',
             background: '#ff2a44',
             color: '#fff',
             fontWeight: 900,
             fontFamily: 'var(--font-mono)',
-            fontSize: '0.85rem',
+            fontSize: '0.82rem',
             padding: '6px 16px',
             border: '2px solid #fff',
             boxShadow: '0 0 15px rgba(0,0,0,0.8)',
-            letterSpacing: '0.1em',
-            textTransform: 'uppercase'
+            letterSpacing: '0.08em'
           }}>
-            [HABIS / CONTAINED]
+            STOK HABIS
           </div>
         ) : isLowStock ? (
           <div style={{
             position: 'absolute',
             top: '8px',
             left: '8px',
-            background: 'rgba(245, 197, 24, 0.9)',
+            background: '#f5c518',
             color: '#000',
             fontSize: '0.65rem',
             fontFamily: 'var(--font-mono)',
@@ -217,21 +205,22 @@ export function ItemCard({ item, onInspect, onEdit, isCuratorMode }) {
         ) : null}
       </div>
 
-      {/* Item Body / Content */}
+      {/* Item Body */}
       <div style={{ padding: '14px', display: 'flex', flexDirection: 'column', flexGrow: 1, gap: '8px' }}>
         
+        {/* Title */}
         <h3 style={{
           fontSize: '1rem',
           fontWeight: 700,
           color: 'var(--text-main)',
           lineHeight: '1.3',
           fontFamily: 'var(--font-serif)',
-          letterSpacing: '0.02em',
           minHeight: '2.6em'
         }}>
           {item.name}
         </h3>
 
+        {/* Short description */}
         <p style={{
           fontSize: '0.8rem',
           color: 'var(--text-muted)',
@@ -258,10 +247,10 @@ export function ItemCard({ item, onInspect, onEdit, isCuratorMode }) {
         }}>
           <div>
             <span className="mono" style={{ fontSize: '0.68rem', color: 'var(--text-muted)', display: 'block' }}>
-              PRICE / NILAI REQUISITION
+              HARGA ITEM
             </span>
             <span className="mono glow-text" style={{
-              fontSize: '1.15rem',
+              fontSize: '1.2rem',
               fontWeight: 800,
               color: 'var(--accent-primary)'
             }}>
@@ -269,20 +258,20 @@ export function ItemCard({ item, onInspect, onEdit, isCuratorMode }) {
             </span>
           </div>
 
-          <div className="mono" style={{ fontSize: '0.74rem', color: 'var(--text-muted)', textAlign: 'right' }}>
-            <span>STOK: </span>
+          <div className="mono" style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>
+            <span>Stok: </span>
             <strong style={{ color: isOutOfStock ? '#ff2a44' : '#10b981' }}>
-              {isOutOfStock ? "0" : item.stock}
+              {isOutOfStock ? "Habis" : `${item.stock} Ready`}
             </strong>
           </div>
         </div>
 
-        {/* Buttons / Actions */}
+        {/* Action Buttons */}
         <div style={{
           display: 'grid',
           gridTemplateColumns: '1fr 1fr',
           gap: '8px',
-          marginTop: '10px'
+          marginTop: '8px'
         }}>
           <button
             onClick={(e) => {
@@ -293,7 +282,7 @@ export function ItemCard({ item, onInspect, onEdit, isCuratorMode }) {
             style={{ width: '100%' }}
           >
             <Eye size={13} />
-            <span>DOSSIER</span>
+            <span>DETAIL</span>
           </button>
 
           <button
@@ -311,7 +300,7 @@ export function ItemCard({ item, onInspect, onEdit, isCuratorMode }) {
           </button>
         </div>
 
-        {/* Curator Quick Actions (Admin mode) */}
+        {/* Admin quick actions */}
         {isCuratorMode && (
           <div style={{
             display: 'flex',
@@ -328,10 +317,9 @@ export function ItemCard({ item, onInspect, onEdit, isCuratorMode }) {
               }}
               className="btn btn-sm"
               style={{
-                background: 'rgba(212, 175, 55, 0.1)',
                 borderColor: 'var(--accent-secondary)',
                 color: 'var(--accent-secondary)',
-                fontSize: '0.7rem',
+                fontSize: '0.72rem',
                 padding: '3px 8px'
               }}
             >
@@ -342,7 +330,7 @@ export function ItemCard({ item, onInspect, onEdit, isCuratorMode }) {
             <button
               onClick={handleDelete}
               className="btn btn-sm btn-danger"
-              style={{ fontSize: '0.7rem', padding: '3px 8px' }}
+              style={{ fontSize: '0.72rem', padding: '3px 8px' }}
             >
               <Trash2 size={11} />
               <span>HAPUS</span>

@@ -1,6 +1,6 @@
 /* ====================================================================
-   THE REQUISITION WING // DESIGN SYSTEM & THEME TOKENS
-   Limbus Company, Lobotomy Corp, Library of Ruina, SCP Foundation
+   FAUST STORE // UNIFIED SIGNATURE THEME
+   Project Moon & SCP Universe Aesthetic (Crimson & Clockwork Gold)
    ==================================================================== */
 
 :root {
@@ -9,108 +9,34 @@
   --font-mono: 'JetBrains Mono', 'Share Tech Mono', monospace;
   --font-sans: 'Rajdhani', sans-serif;
 
-  /* Global Transitions */
-  --transition-fast: 0.15s ease;
-  --transition-normal: 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  --transition-slow: 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-
-  /* Radius */
-  --radius-sm: 2px;
-  --radius-md: 4px;
-  --radius-lg: 8px;
-}
-
-/* --------------------------------------------------------------------
-   THEME: LIMBUS COMPANY (Default - Crimson, Clockwork Gold, Dark Slate)
-   -------------------------------------------------------------------- */
-:root[data-theme="limbus"] {
-  --bg-primary: #0a090c;
-  --bg-secondary: #121017;
-  --bg-tertiary: #1a1622;
-  --bg-card: rgba(22, 18, 30, 0.85);
+  /* Colors */
+  --bg-primary: #0a090e;
+  --bg-secondary: #131118;
+  --bg-tertiary: #1b1822;
+  --bg-card: rgba(22, 19, 28, 0.95);
   --bg-hover: rgba(255, 42, 68, 0.12);
-  --border-color: rgba(255, 42, 68, 0.28);
+
+  --border-color: rgba(255, 42, 68, 0.25);
   --border-focus: #ff2a44;
-  --accent-primary: #ff2a44;
-  --accent-secondary: #d4af37;
-  --accent-glow: rgba(255, 42, 68, 0.45);
-  --text-main: #f3f0f5;
-  --text-muted: #9f96a8;
-  --hazard-stripe-1: rgba(255, 42, 68, 0.7);
-  --hazard-stripe-2: #0a090c;
-  --header-bg: rgba(10, 9, 12, 0.92);
-  --theme-symbol: "CLOCK // MEPHISTOPHELES";
+
+  --accent-primary: #ff2a44;      /* Faust Crimson */
+  --accent-secondary: #d4af37;    /* Clockwork Gold */
+  --accent-glow: rgba(255, 42, 68, 0.4);
+
+  --text-main: #f5f4f8;
+  --text-muted: #a39cae;
+
+  --hazard-stripe-1: rgba(255, 42, 68, 0.8);
+  --hazard-stripe-2: #0a090e;
+
+  /* Transitions & Radii */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.25s ease;
 }
 
-/* --------------------------------------------------------------------
-   THEME: LOBOTOMY CORPORATION (Hazard Amber, Industrial Dark, CRT Green)
-   -------------------------------------------------------------------- */
-:root[data-theme="lobotomy"] {
-  --bg-primary: #0c0b08;
-  --bg-secondary: #16140d;
-  --bg-tertiary: #201c10;
-  --bg-card: rgba(26, 23, 15, 0.88);
-  --bg-hover: rgba(245, 197, 24, 0.15);
-  --border-color: rgba(245, 197, 24, 0.35);
-  --border-focus: #f5c518;
-  --accent-primary: #f5c518;
-  --accent-secondary: #ff7700;
-  --accent-glow: rgba(245, 197, 24, 0.4);
-  --text-main: #fffbeb;
-  --text-muted: #b8af94;
-  --hazard-stripe-1: #f5c518;
-  --hazard-stripe-2: #16140d;
-  --header-bg: rgba(12, 11, 8, 0.94);
-  --theme-symbol: "L-CORP // ENKEPHALIN EXTRACTION";
-}
-
-/* --------------------------------------------------------------------
-   THEME: LIBRARY OF RUINA (Midnight Library Blue, Pale Gold, Angela Cyan)
-   -------------------------------------------------------------------- */
-:root[data-theme="ruina"] {
-  --bg-primary: #070a14;
-  --bg-secondary: #0d1326;
-  --bg-tertiary: #131c38;
-  --bg-card: rgba(13, 19, 38, 0.88);
-  --bg-hover: rgba(0, 240, 255, 0.12);
-  --border-color: rgba(0, 240, 255, 0.3);
-  --border-focus: #00f0ff;
-  --accent-primary: #00f0ff;
-  --accent-secondary: #e6c875;
-  --accent-glow: rgba(0, 240, 255, 0.4);
-  --text-main: #f0f6ff;
-  --text-muted: #8fa0c4;
-  --hazard-stripe-1: #00f0ff;
-  --hazard-stripe-2: #070a14;
-  --header-bg: rgba(7, 10, 20, 0.94);
-  --theme-symbol: "LIBRARY OF RUINA // GUEST INVITATION";
-}
-
-/* --------------------------------------------------------------------
-   THEME: SCP FOUNDATION (Sterile Tactical Terminal, Secure Monochrome)
-   -------------------------------------------------------------------- */
-:root[data-theme="scp"] {
-  --bg-primary: #0d0d0f;
-  --bg-secondary: #17171a;
-  --bg-tertiary: #222226;
-  --bg-card: rgba(23, 23, 26, 0.9);
-  --bg-hover: rgba(255, 255, 255, 0.08);
-  --border-color: rgba(255, 255, 255, 0.22);
-  --border-focus: #e63946;
-  --accent-primary: #e63946;
-  --accent-secondary: #ffffff;
-  --accent-glow: rgba(230, 57, 70, 0.4);
-  --text-main: #f8f9fa;
-  --text-muted: #9ba1a6;
-  --hazard-stripe-1: #e63946;
-  --hazard-stripe-2: #17171a;
-  --header-bg: rgba(13, 13, 15, 0.95);
-  --theme-symbol: "SCP FOUNDATION // SECURE. CONTAIN. PROTECT.";
-}
-
-/* ====================================================================
-   RESET & BASE STYLES
-   ==================================================================== */
 * {
   margin: 0;
   padding: 0;
@@ -127,84 +53,61 @@ body {
   overflow-x: hidden;
   position: relative;
   background-image: 
-    radial-gradient(circle at 10% 20%, rgba(255, 255, 255, 0.02) 0%, transparent 40%),
-    radial-gradient(circle at 90% 80%, rgba(255, 42, 68, 0.03) 0%, transparent 40%);
+    radial-gradient(circle at 15% 15%, rgba(255, 42, 68, 0.05) 0%, transparent 40%),
+    radial-gradient(circle at 85% 85%, rgba(212, 175, 55, 0.03) 0%, transparent 40%);
 }
 
-/* Subtle CRT Scanlines & Grain */
+/* Subtle scanlines for atmosphere */
 body::before {
   content: " ";
   display: block;
   position: fixed;
   top: 0; left: 0; bottom: 0; right: 0;
-  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.2) 50%);
   background-size: 100% 4px;
   z-index: 9999;
   pointer-events: none;
-  opacity: 0.35;
+  opacity: 0.25;
 }
 
-/* Custom Scrollbar */
+/* Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 ::-webkit-scrollbar-track {
   background: var(--bg-primary);
-  border-left: 1px solid var(--border-color);
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--border-color);
+  background: rgba(255, 42, 68, 0.3);
   border-radius: var(--radius-sm);
 }
 ::-webkit-scrollbar-thumb:hover {
   background: var(--accent-primary);
 }
 
-/* ====================================================================
-   UTILITY & ATMOSPHERIC CLASSES
-   ==================================================================== */
-.hazard-stripe {
-  background: repeating-linear-gradient(
-    -45deg,
-    var(--hazard-stripe-1),
-    var(--hazard-stripe-1) 10px,
-    var(--hazard-stripe-2) 10px,
-    var(--hazard-stripe-2) 20px
-  );
+/* Typography & Utility */
+.serif-title {
+  font-family: var(--font-serif);
+  letter-spacing: 0.05em;
 }
 
 .mono {
   font-family: var(--font-mono);
 }
 
-.serif-title {
-  font-family: var(--font-serif);
-  letter-spacing: 0.06em;
+.hazard-stripe {
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--hazard-stripe-1),
+    var(--hazard-stripe-1) 12px,
+    var(--hazard-stripe-2) 12px,
+    var(--hazard-stripe-2) 24px
+  );
 }
 
-.redacted {
-  background-color: var(--text-main);
-  color: transparent !important;
-  user-select: none;
-  padding: 0 4px;
-  border-radius: 2px;
-  display: inline-block;
-  transition: var(--transition-fast);
-}
-
-.redacted:hover {
-  background-color: var(--border-color);
-  color: var(--text-main) !important;
-}
-
-/* Cyber Terminal Glow */
 .glow-text {
-  text-shadow: 0 0 10px var(--accent-glow);
-}
-
-.glow-box {
-  box-shadow: 0 0 20px var(--accent-glow);
+  text-shadow: 0 0 12px var(--accent-glow);
 }
 
 /* Buttons */
@@ -216,16 +119,14 @@ body::before {
   font-family: var(--font-mono);
   font-size: 0.85rem;
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  padding: 8px 16px;
+  letter-spacing: 0.04em;
+  padding: 9px 16px;
   border: 1px solid var(--border-color);
   background: var(--bg-secondary);
   color: var(--text-main);
   cursor: pointer;
   transition: all var(--transition-fast);
   border-radius: var(--radius-sm);
-  position: relative;
   user-select: none;
 }
 
@@ -234,7 +135,7 @@ body::before {
   background: var(--bg-hover);
   color: #fff;
   transform: translateY(-1px);
-  box-shadow: 0 0 12px var(--accent-glow);
+  box-shadow: 0 0 14px var(--accent-glow);
 }
 
 .btn:active {
@@ -243,21 +144,35 @@ body::before {
 
 .btn-primary {
   background: var(--accent-primary);
-  color: #000;
+  color: #fff;
   font-weight: 700;
   border-color: var(--accent-primary);
 }
 
 .btn-primary:hover {
-  background: #fff;
-  border-color: #fff;
+  background: #ff475e;
+  border-color: #ff475e;
+  color: #fff;
+  box-shadow: 0 0 18px rgba(255, 42, 68, 0.6);
+}
+
+.btn-success {
+  background: #25d366;
+  border-color: #25d366;
   color: #000;
-  box-shadow: 0 0 16px rgba(255, 255, 255, 0.4);
+  font-weight: 700;
+}
+.btn-success:hover {
+  background: #2ee672;
+  border-color: #2ee672;
+  color: #000;
+  box-shadow: 0 0 16px rgba(37, 211, 102, 0.4);
 }
 
 .btn-danger {
   border-color: #ff2a44;
   color: #ff2a44;
+  background: rgba(255, 42, 68, 0.08);
 }
 .btn-danger:hover {
   background: #ff2a44;
@@ -265,8 +180,8 @@ body::before {
 }
 
 .btn-sm {
-  padding: 4px 10px;
-  font-size: 0.75rem;
+  padding: 5px 12px;
+  font-size: 0.78rem;
 }
 
 /* Inputs */
@@ -277,7 +192,7 @@ body::before {
   background: var(--bg-primary);
   border: 1px solid var(--border-color);
   color: var(--text-main);
-  padding: 8px 12px;
+  padding: 9px 12px;
   border-radius: var(--radius-sm);
   outline: none;
   transition: border-color var(--transition-fast);
@@ -285,15 +200,15 @@ body::before {
 
 .input:focus, .select:focus, .textarea:focus {
   border-color: var(--accent-primary);
-  box-shadow: 0 0 8px var(--accent-glow);
+  box-shadow: 0 0 10px var(--accent-glow);
 }
 
-/* Modal Overlay */
+/* Modals */
 .modal-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0, 0, 0, 0.82);
-  backdrop-filter: blur(6px);
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -305,9 +220,9 @@ body::before {
 .modal-content {
   background: var(--bg-secondary);
   border: 1px solid var(--border-color);
-  box-shadow: 0 0 35px rgba(0, 0, 0, 0.9), 0 0 15px var(--accent-glow);
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.9), 0 0 20px var(--accent-glow);
   width: 100%;
-  max-width: 750px;
+  max-width: 800px;
   max-height: 90vh;
   overflow-y: auto;
   border-radius: var(--radius-md);
@@ -321,55 +236,27 @@ body::before {
 }
 
 @keyframes modalScale {
-  from { opacity: 0; transform: scale(0.96) translateY(8px); }
+  from { opacity: 0; transform: scale(0.97) translateY(8px); }
   to { opacity: 1; transform: scale(1) translateY(0); }
 }
 
-/* Badges */
 .badge {
   font-family: var(--font-mono);
   font-size: 0.72rem;
   font-weight: 700;
   padding: 2px 8px;
-  border-radius: 2px;
-  letter-spacing: 0.08em;
+  border-radius: 3px;
+  letter-spacing: 0.05em;
   display: inline-flex;
   align-items: center;
   gap: 4px;
 }
 
-/* Glitch animation for headers */
-@keyframes textGlitch {
-  0% { transform: none; opacity: 1; }
-  7% { transform: skew(-0.5deg, -0.9deg); opacity: 0.95; }
-  10% { transform: none; opacity: 1; }
-  27% { transform: none; opacity: 1; }
-  30% { transform: skew(0.8deg, 0.4deg); }
-  35% { transform: none; }
-  89% { transform: none; }
-  90% { transform: skew(-1deg, 0.2deg); }
-  100% { transform: none; }
-}
-
-.glitch-hover:hover {
-  animation: textGlitch 1.5s infinite;
-}
-
-/* ====================================================================
-   RESPONSIVE DESIGN (MOBILE & TABLET BREAKPOINTS)
-   ==================================================================== */
+/* Responsive */
 @media (max-width: 768px) {
   .modal-grid-responsive {
     grid-template-columns: 1fr !important;
     gap: 16px !important;
     padding: 16px !important;
-  }
-
-  .theme-text-label {
-    display: none;
-  }
-
-  .modal-content {
-    max-height: 94vh;
   }
 }
