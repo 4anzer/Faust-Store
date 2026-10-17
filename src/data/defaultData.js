@@ -217,7 +217,8 @@ export const DEFAULT_MERCHANT_PROFILE = {
   telegram: "@FaustStore",
   paymentMethods: ["QRIS", "BCA", "DANA", "GoPay", "ShopeePay", "Steam Wallet"],
   announcement: "📢 Selamat datang di Faust Store! Pemesanan langsung tanpa perlu buat akun. Notifikasi terhubung ke Discord & WhatsApp.",
-  currencySymbol: "Rp"
+  currencySymbol: "Rp",
+  isOpen: true
 };
 
 export const DEFAULT_ORDERS = [

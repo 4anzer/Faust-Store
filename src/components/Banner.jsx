@@ -1,9 +1,9 @@
 import React from 'react';
 import { useCatalog } from '../context/CatalogContext';
-import { Radio, Send, MessageSquare, CheckCircle2, ShieldCheck, Zap } from 'lucide-react';
+import { Radio, Send, MessageSquare, CheckCircle2, AlertOctagon } from 'lucide-react';
 
 export function Banner() {
-  const { merchantProfile, items } = useCatalog();
+  const { merchantProfile, items, isStoreOpen } = useCatalog();
   const inStockCount = items.filter(i => i.stock > 0).length;
 
   return (
@@ -29,14 +29,19 @@ export function Banner() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{
               display: 'inline-block',
-              width: '8px',
-              height: '8px',
+              width: '9px',
+              height: '9px',
               borderRadius: '50%',
-              background: '#10b981',
-              boxShadow: '0 0 10px #10b981'
+              background: isStoreOpen ? '#10b981' : '#ff2a44',
+              boxShadow: isStoreOpen ? '0 0 10px #10b981' : '0 0 10px #ff2a44'
             }} />
             <span style={{ color: 'var(--text-main)', fontWeight: 700 }}>
-              STATUS TOKO: <span style={{ color: '#10b981' }}>BUKA & FAST RESPONSE</span>
+              STATUS TOKO:{' '}
+              {isStoreOpen ? (
+                <span style={{ color: '#10b981' }}>BUKA & FAST RESPONSE</span>
+              ) : (
+                <span style={{ color: '#ff2a44', fontWeight: 800 }}>TUTUP SEMENTARA</span>
+              )}
             </span>
             <span style={{ color: 'var(--border-color)' }}>•</span>
             <span style={{ color: 'var(--text-muted)' }}>
@@ -54,10 +59,30 @@ export function Banner() {
           </div>
         </div>
 
+        {/* Store Closed Warning Banner */}
+        {!isStoreOpen && (
+          <div style={{
+            background: 'rgba(255, 42, 68, 0.12)',
+            border: '1px solid #ff2a44',
+            padding: '10px 14px',
+            borderRadius: 'var(--radius-sm)',
+            marginBottom: '14px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            color: '#ff475e'
+          }}>
+            <AlertOctagon size={18} style={{ flexShrink: 0 }} />
+            <span style={{ fontSize: '0.84rem', fontFamily: 'var(--font-mono)' }}>
+              <strong>PEMBERITAHUAN:</strong> Toko saat ini sedang <strong>TUTUP</strong>. Kamu tetap dapat melihat katalog dan spesifikasi item, namun pemesanan sementara tidak dapat dilakukan.
+            </span>
+          </div>
+        )}
+
         {/* Announcement Box */}
         <div style={{
           background: 'var(--bg-tertiary)',
-          borderLeft: '4px solid var(--accent-primary)',
+          borderLeft: isStoreOpen ? '4px solid var(--accent-primary)' : '4px solid #ff2a44',
           borderTop: '1px solid var(--border-color)',
           borderRight: '1px solid var(--border-color)',
           borderBottom: '1px solid var(--border-color)',
@@ -70,11 +95,11 @@ export function Banner() {
           gap: '12px'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <Radio size={18} color="var(--accent-primary)" style={{ flexShrink: 0 }} />
+            <Radio size={18} color={isStoreOpen ? "var(--accent-primary)" : "#ff2a44"} style={{ flexShrink: 0 }} />
             <div>
               <span className="mono" style={{
                 fontSize: '0.74rem',
-                color: 'var(--accent-primary)',
+                color: isStoreOpen ? 'var(--accent-primary)' : '#ff2a44',
                 fontWeight: 700,
                 marginRight: '8px'
               }}>

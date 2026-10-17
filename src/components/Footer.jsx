@@ -43,7 +43,7 @@ export function Footer() {
               </span>
             </div>
             <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', lineHeight: '1.6' }}>
-              Platform toko dan merchant in-game item terpercaya. Melayani pembelian item, akun, dan jasa untuk Limbus Company, Library of Ruina, Lobotomy Corp, SCP, serta game populer lainnya.
+              Platform toko dan merchant in-game item terpercaya.
             </p>
           </div>
 

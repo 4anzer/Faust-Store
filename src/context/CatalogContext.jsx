@@ -214,9 +214,68 @@ export function CatalogProvider({ children }) {
     return newOrder;
   };
 
+  // Store Open / Closed Status
+  const isStoreOpen = merchantProfile.isOpen !== false;
+
+  const toggleStoreStatus = () => {
+    const nextState = !isStoreOpen;
+    updateMerchantProfile({ isOpen: nextState });
+    if (nextState) {
+      playSound('equip');
+    } else {
+      playSound('hazard');
+    }
+    return nextState;
+  };
+
   const updateOrderStatus = (orderId, status) => {
+    const targetOrder = orders.find((o) => o.id === orderId);
+    if (!targetOrder) return;
+
+    // 1. If transitioning to 'Selesai' and stock hasn't been deducted yet:
+    if (status === 'Selesai' && !targetOrder.stockDeducted) {
+      setItems((prevItems) =>
+        prevItems.map((item) => {
+          const purchasedItem = targetOrder.items.find(
+            (it) => it.id === item.id || it.name.trim().toLowerCase() === item.name.trim().toLowerCase()
+          );
+          if (purchasedItem) {
+            const currentStock = typeof item.stock === 'number' ? item.stock : 0;
+            const newStock = Math.max(0, currentStock - purchasedItem.quantity);
+            return { ...item, stock: newStock };
+          }
+          return item;
+        })
+      );
+    }
+    // 2. If status was 'Selesai' (already deducted) and admin reverts it back to 'Pending' / 'Dibatalkan':
+    else if (status !== 'Selesai' && targetOrder.status === 'Selesai' && targetOrder.stockDeducted) {
+      setItems((prevItems) =>
+        prevItems.map((item) => {
+          const purchasedItem = targetOrder.items.find(
+            (it) => it.id === item.id || it.name.trim().toLowerCase() === item.name.trim().toLowerCase()
+          );
+          if (purchasedItem) {
+            const currentStock = typeof item.stock === 'number' ? item.stock : 0;
+            return { ...item, stock: currentStock + purchasedItem.quantity };
+          }
+          return item;
+        })
+      );
+    }
+
+    // Update order record
     setOrders((prev) =>
-      prev.map((ord) => (ord.id === orderId ? { ...ord, status } : ord))
+      prev.map((ord) => {
+        if (ord.id === orderId) {
+          return {
+            ...ord,
+            status,
+            stockDeducted: status === 'Selesai'
+          };
+        }
+        return ord;
+      })
     );
     playSound('beep');
   };
@@ -324,6 +383,8 @@ export function CatalogProvider({ children }) {
         items,
         games,
         merchantProfile,
+        isStoreOpen,
+        toggleStoreStatus,
         orders,
         cart,
         soundEnabled,

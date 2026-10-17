@@ -4,7 +4,7 @@ import { THREAT_LEVELS } from '../data/defaultData';
 import { ShoppingCart, Eye, Edit3, Trash2, Sparkles, Check, Package } from 'lucide-react';
 
 export function ItemCard({ item, onInspect, onEdit, isCuratorMode }) {
-  const { addToCart, deleteItem, playSound } = useCatalog();
+  const { addToCart, deleteItem, playSound, isStoreOpen } = useCatalog();
 
   const threat = THREAT_LEVELS[item.threat] || {
     name: item.threat || 'SAFE',
@@ -25,6 +25,11 @@ export function ItemCard({ item, onInspect, onEdit, isCuratorMode }) {
 
   const handleAddToCart = (e) => {
     e.stopPropagation();
+    if (!isStoreOpen) {
+      playSound('hazard');
+      alert("Maaf, toko sedang TUTUP sementara. Pemesanan tidak dapat dilakukan saat ini.");
+      return;
+    }
     if (isOutOfStock) {
       playSound('hazard');
       return;
@@ -287,16 +292,19 @@ export function ItemCard({ item, onInspect, onEdit, isCuratorMode }) {
 
           <button
             onClick={handleAddToCart}
-            disabled={isOutOfStock}
+            disabled={isOutOfStock || !isStoreOpen}
             className="btn btn-sm btn-primary"
             style={{
               width: '100%',
-              opacity: isOutOfStock ? 0.4 : 1,
-              cursor: isOutOfStock ? 'not-allowed' : 'pointer'
+              opacity: (isOutOfStock || !isStoreOpen) ? 0.4 : 1,
+              cursor: (isOutOfStock || !isStoreOpen) ? 'not-allowed' : 'pointer',
+              background: !isStoreOpen ? 'var(--bg-tertiary)' : undefined,
+              borderColor: !isStoreOpen ? 'var(--border-color)' : undefined,
+              color: !isStoreOpen ? 'var(--text-muted)' : undefined
             }}
           >
             <ShoppingCart size={13} />
-            <span>BELI</span>
+            <span>{!isStoreOpen ? 'TUTUP' : isOutOfStock ? 'HABIS' : 'BELI'}</span>
           </button>
         </div>
 

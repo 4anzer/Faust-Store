@@ -20,7 +20,8 @@ export function CartModal({ onClose }) {
     clearCart, 
     merchantProfile, 
     createOrder, 
-    playSound 
+    playSound,
+    isStoreOpen 
   } = useCatalog();
 
   const [buyerName, setBuyerName] = useState('');
@@ -44,6 +45,11 @@ export function CartModal({ onClose }) {
 
   const handleSubmitOrder = async (e) => {
     e.preventDefault();
+    if (!isStoreOpen) {
+      playSound('hazard');
+      alert("Maaf, toko sedang TUTUP sementara. Pemesanan tidak dapat diproses.");
+      return;
+    }
     if (!buyerName.trim()) {
       alert("Mohon masukkan nama atau nickname game kamu!");
       return;
@@ -394,10 +400,25 @@ export function CartModal({ onClose }) {
                 </div>
               </div>
 
+              {!isStoreOpen && (
+                <div style={{
+                  background: 'rgba(255, 42, 68, 0.12)',
+                  border: '1px solid #ff2a44',
+                  color: '#ff475e',
+                  padding: '10px 14px',
+                  borderRadius: 'var(--radius-sm)',
+                  fontSize: '0.84rem',
+                  fontFamily: 'var(--font-mono)',
+                  textAlign: 'center'
+                }}>
+                  ⚠️ <strong>TOKO SEDANG TUTUP SEMENTARA.</strong> Pemesanan tidak dapat diproses saat ini.
+                </div>
+              )}
+
               {/* Submit Button */}
               <button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={isSubmitting || !isStoreOpen}
                 className="btn btn-success"
                 style={{
                   padding: '13px',
@@ -405,11 +426,22 @@ export function CartModal({ onClose }) {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  gap: '8px'
+                  gap: '8px',
+                  opacity: (!isStoreOpen || isSubmitting) ? 0.4 : 1,
+                  cursor: (!isStoreOpen || isSubmitting) ? 'not-allowed' : 'pointer',
+                  background: !isStoreOpen ? 'var(--bg-tertiary)' : undefined,
+                  borderColor: !isStoreOpen ? 'var(--border-color)' : undefined,
+                  color: !isStoreOpen ? 'var(--text-muted)' : undefined
                 }}
               >
                 <Send size={18} />
-                <span>{isSubmitting ? "MEMPROSES PESANAN..." : "KONFIRMASI PESANAN & LANJUT KE WHATSAPP"}</span>
+                <span>
+                  {!isStoreOpen 
+                    ? "TOKO SEDANG TUTUP (TIDAK DAPAT MEMESAN)" 
+                    : isSubmitting 
+                    ? "MEMPROSES PESANAN..." 
+                    : "KONFIRMASI PESANAN & LANJUT KE WHATSAPP"}
+                </span>
               </button>
 
               <p style={{

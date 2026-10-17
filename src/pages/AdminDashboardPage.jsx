@@ -32,6 +32,8 @@ export function AdminDashboardPage() {
     games, 
     orders,
     merchantProfile, 
+    isStoreOpen,
+    toggleStoreStatus,
     addItem, 
     updateItem, 
     deleteItem, 
@@ -199,6 +201,32 @@ export function AdminDashboardPage() {
 
         {/* Action buttons */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          
+          {/* Store Open / Closed Toggle Button */}
+          <button
+            onClick={() => {
+              const nextState = toggleStoreStatus();
+              alert(`Status toko berhasil diubah menjadi: ${nextState ? 'BUKA (Menerima Pesanan)' : 'TUTUP (Pemesanan Dinonaktifkan)'}`);
+            }}
+            className="btn btn-sm"
+            style={{
+              background: isStoreOpen ? 'rgba(16, 185, 129, 0.15)' : 'rgba(255, 42, 68, 0.18)',
+              borderColor: isStoreOpen ? '#10b981' : '#ff2a44',
+              color: isStoreOpen ? '#10b981' : '#ff475e',
+              fontWeight: 800
+            }}
+            title="Klik untuk mengubah status BUKA / TUTUP toko"
+          >
+            <span style={{
+              width: '8px',
+              height: '8px',
+              borderRadius: '50%',
+              background: isStoreOpen ? '#10b981' : '#ff2a44',
+              boxShadow: isStoreOpen ? '0 0 8px #10b981' : '0 0 8px #ff2a44'
+            }} />
+            <span>STATUS TOKO: {isStoreOpen ? 'BUKA' : 'TUTUP'}</span>
+          </button>
+
           <Link
             to="/"
             target="_blank"
@@ -1131,6 +1159,62 @@ export function AdminDashboardPage() {
                     paymentMethods: e.target.value.split(',').map(s => s.trim()).filter(Boolean)
                   })}
                 />
+              </div>
+
+              {/* Store Open / Closed Status Selector */}
+              <div>
+                <label className="mono" style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '6px' }}>
+                  STATUS OPERASIONAL TOKO:
+                </label>
+                <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                  <label style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '8px 16px',
+                    background: profileForm.isOpen !== false ? 'rgba(16, 185, 129, 0.15)' : 'var(--bg-primary)',
+                    border: profileForm.isOpen !== false ? '1px solid #10b981' : '1px solid var(--border-color)',
+                    borderRadius: 'var(--radius-sm)',
+                    cursor: 'pointer',
+                    color: profileForm.isOpen !== false ? '#10b981' : 'var(--text-muted)',
+                    fontWeight: 700,
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '0.82rem'
+                  }}>
+                    <input
+                      type="radio"
+                      name="storeStatus"
+                      checked={profileForm.isOpen !== false}
+                      onChange={() => setProfileForm({ ...profileForm, isOpen: true })}
+                      style={{ accentColor: '#10b981' }}
+                    />
+                    <span>🟢 BUKA (Menerima Pesanan)</span>
+                  </label>
+
+                  <label style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '8px 16px',
+                    background: profileForm.isOpen === false ? 'rgba(255, 42, 68, 0.15)' : 'var(--bg-primary)',
+                    border: profileForm.isOpen === false ? '1px solid #ff2a44' : '1px solid var(--border-color)',
+                    borderRadius: 'var(--radius-sm)',
+                    cursor: 'pointer',
+                    color: profileForm.isOpen === false ? '#ff475e' : 'var(--text-muted)',
+                    fontWeight: 700,
+                    fontFamily: 'var(--font-mono)',
+                    fontSize: '0.82rem'
+                  }}>
+                    <input
+                      type="radio"
+                      name="storeStatus"
+                      checked={profileForm.isOpen === false}
+                      onChange={() => setProfileForm({ ...profileForm, isOpen: false })}
+                      style={{ accentColor: '#ff2a44' }}
+                    />
+                    <span>🔴 TUTUP (Pemesanan Dinonaktifkan)</span>
+                  </label>
+                </div>
               </div>
 
               <button type="submit" className="btn btn-primary" style={{ marginTop: '6px' }}>

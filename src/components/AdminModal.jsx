@@ -27,6 +27,8 @@ export function AdminModal({ onClose, editingItem, setEditingItem }) {
     games, 
     orders,
     merchantProfile, 
+    isStoreOpen,
+    toggleStoreStatus,
     addItem, 
     updateItem, 
     deleteItem, 
@@ -1075,6 +1077,62 @@ export function AdminModal({ onClose, editingItem, setEditingItem }) {
                   paymentMethods: e.target.value.split(',').map(s => s.trim()).filter(Boolean)
                 })}
               />
+            </div>
+
+            {/* Store Status Selector */}
+            <div>
+              <label className="mono" style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '6px' }}>
+                STATUS OPERASIONAL TOKO:
+              </label>
+              <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                <label style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '8px 16px',
+                  background: profileForm.isOpen !== false ? 'rgba(16, 185, 129, 0.15)' : 'var(--bg-primary)',
+                  border: profileForm.isOpen !== false ? '1px solid #10b981' : '1px solid var(--border-color)',
+                  borderRadius: 'var(--radius-sm)',
+                  cursor: 'pointer',
+                  color: profileForm.isOpen !== false ? '#10b981' : 'var(--text-muted)',
+                  fontWeight: 700,
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '0.82rem'
+                }}>
+                  <input
+                    type="radio"
+                    name="storeStatusModal"
+                    checked={profileForm.isOpen !== false}
+                    onChange={() => setProfileForm({ ...profileForm, isOpen: true })}
+                    style={{ accentColor: '#10b981' }}
+                  />
+                  <span>🟢 BUKA (Menerima Pesanan)</span>
+                </label>
+
+                <label style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '8px 16px',
+                  background: profileForm.isOpen === false ? 'rgba(255, 42, 68, 0.15)' : 'var(--bg-primary)',
+                  border: profileForm.isOpen === false ? '1px solid #ff2a44' : '1px solid var(--border-color)',
+                  borderRadius: 'var(--radius-sm)',
+                  cursor: 'pointer',
+                  color: profileForm.isOpen === false ? '#ff475e' : 'var(--text-muted)',
+                  fontWeight: 700,
+                  fontFamily: 'var(--font-mono)',
+                  fontSize: '0.82rem'
+                }}>
+                  <input
+                    type="radio"
+                    name="storeStatusModal"
+                    checked={profileForm.isOpen === false}
+                    onChange={() => setProfileForm({ ...profileForm, isOpen: false })}
+                    style={{ accentColor: '#ff2a44' }}
+                  />
+                  <span>🔴 TUTUP (Pemesanan Dinonaktifkan)</span>
+                </label>
+              </div>
             </div>
 
             <button type="submit" className="btn btn-primary" style={{ marginTop: '6px' }}>

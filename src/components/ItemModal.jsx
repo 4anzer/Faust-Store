@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 
 export function ItemModal({ item, onClose, onOpenCart }) {
-  const { merchantProfile, addToCart, playSound } = useCatalog();
+  const { merchantProfile, addToCart, playSound, isStoreOpen } = useCatalog();
 
   if (!item) return null;
 
@@ -33,6 +33,11 @@ export function ItemModal({ item, onClose, onOpenCart }) {
   };
 
   const handleAddToCart = () => {
+    if (!isStoreOpen) {
+      playSound('hazard');
+      alert("Maaf, toko sedang TUTUP sementara. Pemesanan tidak dapat dilakukan saat ini.");
+      return;
+    }
     if (isOutOfStock) {
       playSound('hazard');
       return;
@@ -41,6 +46,11 @@ export function ItemModal({ item, onClose, onOpenCart }) {
   };
 
   const handleDirectWhatsApp = () => {
+    if (!isStoreOpen) {
+      playSound('hazard');
+      alert("Maaf, toko sedang TUTUP sementara. Pemesanan tidak dapat dilakukan saat ini.");
+      return;
+    }
     playSound('beep');
     const waUrl = createDirectItemWhatsAppUrl(merchantProfile.whatsapp, item);
     window.open(waUrl, '_blank');
@@ -299,26 +309,33 @@ export function ItemModal({ item, onClose, onOpenCart }) {
             }}>
               <button
                 onClick={handleAddToCart}
-                disabled={isOutOfStock}
+                disabled={isOutOfStock || !isStoreOpen}
                 className="btn"
                 style={{
                   borderColor: 'var(--accent-primary)',
                   color: 'var(--accent-primary)',
-                  opacity: isOutOfStock ? 0.4 : 1
+                  opacity: (isOutOfStock || !isStoreOpen) ? 0.4 : 1,
+                  cursor: (isOutOfStock || !isStoreOpen) ? 'not-allowed' : 'pointer'
                 }}
               >
                 <ShoppingCart size={15} />
-                <span>+ KERANJANG</span>
+                <span>{!isStoreOpen ? 'TOKO TUTUP' : '+ KERANJANG'}</span>
               </button>
 
               <button
                 onClick={handleDirectWhatsApp}
-                disabled={isOutOfStock}
+                disabled={isOutOfStock || !isStoreOpen}
                 className="btn btn-success"
-                style={{ opacity: isOutOfStock ? 0.4 : 1 }}
+                style={{
+                  opacity: (isOutOfStock || !isStoreOpen) ? 0.4 : 1,
+                  cursor: (isOutOfStock || !isStoreOpen) ? 'not-allowed' : 'pointer',
+                  background: !isStoreOpen ? 'var(--bg-tertiary)' : undefined,
+                  borderColor: !isStoreOpen ? 'var(--border-color)' : undefined,
+                  color: !isStoreOpen ? 'var(--text-muted)' : undefined
+                }}
               >
                 <Send size={15} />
-                <span>BELI VIA WHATSAPP</span>
+                <span>{!isStoreOpen ? 'TOKO SEDANG TUTUP' : 'BELI VIA WHATSAPP'}</span>
               </button>
             </div>
 
