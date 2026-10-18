@@ -1,40 +1,24 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCatalog } from '../context/CatalogContext';
-import { useAuth } from '../context/AuthContext';
 import { 
-  ShieldAlert, 
   ShoppingCart, 
-  Lock, 
   Volume2, 
-  VolumeX, 
-  LayoutDashboard
+  VolumeX 
 } from 'lucide-react';
 
 export function Header({ onOpenCart }) {
   const { 
     merchantProfile, 
     cart, 
-    orders,
     soundEnabled, 
     toggleSound, 
     playSound 
   } = useCatalog();
 
-  const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
   const totalCartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
-  const pendingOrdersCount = orders.filter(o => o.status === 'Pending').length;
-
-  const handleAdminClick = () => {
-    playSound('beep');
-    if (isAuthenticated) {
-      navigate('/admin/dashboard');
-    } else {
-      navigate('/admin/login');
-    }
-  };
 
   return (
     <header style={{
@@ -66,26 +50,32 @@ export function Header({ onOpenCart }) {
         >
           <div style={{
             position: 'relative',
-            width: '40px',
-            height: '40px',
-            borderRadius: '50%',
-            background: 'var(--bg-tertiary)',
+            width: '44px',
+            height: '44px',
+            borderRadius: '8px',
+            overflow: 'hidden',
             border: '2px solid var(--accent-primary)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 0 12px var(--accent-glow)'
+            boxShadow: '0 0 14px var(--accent-glow)',
+            background: '#000',
+            flexShrink: 0
           }}>
-            <ShieldAlert size={22} color="var(--accent-primary)" />
+            <img 
+              src="/logo.png" 
+              alt="Faust Store Logo" 
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+            />
             <div style={{
               position: 'absolute',
-              bottom: '-2px',
-              right: '-2px',
-              width: '10px',
-              height: '10px',
+              bottom: '2px',
+              right: '2px',
+              width: '9px',
+              height: '9px',
               borderRadius: '50%',
               background: '#10b981',
-              border: '2px solid var(--bg-primary)'
+              border: '1.5px solid #000'
             }} title="Online" />
           </div>
 
@@ -128,48 +118,6 @@ export function Header({ onOpenCart }) {
             }}
           >
             {soundEnabled ? <Volume2 size={16} /> : <VolumeX size={16} />}
-          </button>
-
-          {/* Discreet Admin Lock Button */}
-          <button
-            onClick={handleAdminClick}
-            className="btn btn-sm"
-            style={{
-              borderColor: 'var(--border-color)',
-              background: 'var(--bg-secondary)',
-              position: 'relative',
-              padding: '7px 12px'
-            }}
-            title={isAuthenticated ? "Buka Dashboard Admin" : "Akses Admin (Login Diperlukan)"}
-          >
-            {isAuthenticated ? (
-              <>
-                <LayoutDashboard size={14} color="var(--accent-secondary)" />
-                <span className="mono" style={{ fontSize: '0.76rem', color: 'var(--accent-secondary)' }}>
-                  DASHBOARD
-                </span>
-                {pendingOrdersCount > 0 && (
-                  <span style={{
-                    background: '#ff2a44',
-                    color: '#fff',
-                    borderRadius: '10px',
-                    padding: '1px 6px',
-                    fontSize: '0.65rem',
-                    fontWeight: 800,
-                    marginLeft: '2px'
-                  }}>
-                    {pendingOrdersCount}
-                  </span>
-                )}
-              </>
-            ) : (
-              <>
-                <Lock size={13} color="var(--text-muted)" />
-                <span className="mono" style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>
-                  ADMIN
-                </span>
-              </>
-            )}
           </button>
 
           {/* Keranjang Belanja Button */}

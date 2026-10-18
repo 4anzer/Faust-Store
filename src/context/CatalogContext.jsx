@@ -39,13 +39,23 @@ export function CatalogProvider({ children }) {
 
   // Merchant Profile State (includes WhatsApp, Discord webhook, etc.)
   const [merchantProfile, setMerchantProfile] = useState(() => {
+    const fallbackWebhook = import.meta.env.VITE_DISCORD_WEBHOOK_URL || DEFAULT_MERCHANT_PROFILE.discordWebhook;
     try {
       const saved = localStorage.getItem(STORAGE_KEYS.PROFILE);
-      if (saved) return JSON.parse(saved);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (!parsed.discordWebhook || parsed.discordWebhook.trim() === '') {
+          parsed.discordWebhook = fallbackWebhook;
+        }
+        return parsed;
+      }
     } catch {
       // ignore
     }
-    return DEFAULT_MERCHANT_PROFILE;
+    return {
+      ...DEFAULT_MERCHANT_PROFILE,
+      discordWebhook: fallbackWebhook
+    };
   });
 
   // Customer Orders List (Visible to Admin, no customer login required)
@@ -206,8 +216,19 @@ export function CatalogProvider({ children }) {
     playSound('equip');
 
     // Trigger Discord Webhook Notification if configured
-    if (merchantProfile.discordWebhook) {
-      sendDiscordOrderNotification(merchantProfile.discordWebhook, newOrder)
+    const activeWebhook = (merchantProfile.discordWebhook && merchantProfile.discordWebhook.trim()) 
+      ? merchantProfile.discordWebhook.trim() 
+      : (import.meta.env.VITE_DISCORD_WEBHOOK_URL || DEFAULT_MERCHANT_PROFILE.discordWebhook);
+
+    if (activeWebhook) {
+      sendDiscordOrderNotification(activeWebhook, newOrder)
+        .then((res) => {
+          if (res?.success) {
+            console.log("Discord notification successfully sent by Carmen!");
+          } else {
+            console.warn("Discord notification notice:", res?.reason);
+          }
+        })
         .catch((err) => console.error("Error sending webhook:", err));
     }
 

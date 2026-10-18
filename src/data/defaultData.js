@@ -209,11 +209,12 @@ export const DEFAULT_ITEMS = [
 
 export const DEFAULT_MERCHANT_PROFILE = {
   shopName: "Faust Store",
-  subtitle: "Toko Item & Jasa In-Game Terpercaya // Limbus Company, Ruina, Lobotomy & SCP",
+  subtitle: "Roblox & In-Game Item Shop Terpercaya",
   sellerTag: "VERIFIED MERCHANT",
+  logoUrl: "/logo.png",
   whatsapp: "6281234567890",
   discord: "faust_store#0001",
-  discordWebhook: "", // Will hold the Discord Webhook URL
+  discordWebhook: "https://discord.com/api/webhooks/1561067399795445852/2REoJTHuzuERa_GSwx6mDBsK9U79nBCshe9p1bkhNvz03DFDKfuxhh0UChCJR-HW105q",
   telegram: "@FaustStore",
   paymentMethods: ["QRIS", "BCA", "DANA", "GoPay", "ShopeePay", "Steam Wallet"],
   announcement: "📢 Selamat datang di Faust Store! Pemesanan langsung tanpa perlu buat akun. Notifikasi terhubung ke Discord & WhatsApp.",

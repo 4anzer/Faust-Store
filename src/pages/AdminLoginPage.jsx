@@ -77,18 +77,20 @@ export function AdminLoginPage() {
           textAlign: 'center'
         }}>
           <div style={{
-            width: '52px',
-            height: '52px',
-            borderRadius: '50%',
-            background: 'rgba(255, 42, 68, 0.12)',
+            width: '64px',
+            height: '64px',
+            borderRadius: '10px',
             border: '2px solid var(--accent-primary)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            margin: '0 auto 12px auto',
-            boxShadow: '0 0 16px var(--accent-glow)'
+            overflow: 'hidden',
+            margin: '0 auto 14px auto',
+            boxShadow: '0 0 20px var(--accent-glow)',
+            background: '#000'
           }}>
-            <ShieldAlert size={28} color="var(--accent-primary)" />
+            <img 
+              src="/logo.png" 
+              alt="Faust Store" 
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+            />
           </div>
 
           <h2 className="serif-title" style={{ fontSize: '1.3rem', fontWeight: 900, color: 'var(--text-main)' }}>

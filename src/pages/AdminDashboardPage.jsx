@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useCatalog } from '../context/CatalogContext';
 import { THREAT_LEVELS } from '../data/defaultData';
-import { testDiscordWebhook } from '../utils/discordWebhook';
+import { testDiscordWebhook, CARMEN_AVATAR_URL } from '../utils/discordWebhook';
 import { 
   ShieldAlert, 
   LogOut, 
@@ -20,7 +20,6 @@ import {
   Download, 
   RotateCcw, 
   Send, 
-  CheckCircle,
   ExternalLink
 } from 'lucide-react';
 
@@ -123,6 +122,10 @@ export function AdminDashboardPage() {
     setNewGameInput('');
   };
 
+  React.useEffect(() => {
+    setProfileForm({ ...merchantProfile });
+  }, [merchantProfile]);
+
   const handleSaveProfile = (e) => {
     e.preventDefault();
     updateMerchantProfile(profileForm);
@@ -130,16 +133,19 @@ export function AdminDashboardPage() {
   };
 
   const handleTestWebhook = async () => {
-    if (!profileForm.discordWebhook) {
+    const webhookToTest = profileForm.discordWebhook?.trim() || merchantProfile.discordWebhook?.trim();
+    if (!webhookToTest) {
       alert("Masukkan URL Discord Webhook terlebih dahulu!");
       return;
     }
     setTestingWebhook(true);
     setWebhookTestResult(null);
-    const result = await testDiscordWebhook(profileForm.discordWebhook);
+    const result = await testDiscordWebhook(webhookToTest);
     setWebhookTestResult(result);
     setTestingWebhook(false);
     if (result.success) {
+      // Automatically persist verified webhook to merchant profile
+      updateMerchantProfile({ ...profileForm, discordWebhook: webhookToTest });
       playSound('equip');
     } else {
       playSound('hazard');
@@ -172,16 +178,22 @@ export function AdminDashboardPage() {
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <div style={{
-            width: '36px',
-            height: '36px',
-            borderRadius: '50%',
-            background: 'rgba(255, 42, 68, 0.15)',
+            width: '38px',
+            height: '38px',
+            borderRadius: '8px',
             border: '2px solid var(--accent-primary)',
+            overflow: 'hidden',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center'
+            justifyContent: 'center',
+            boxShadow: '0 0 12px var(--accent-glow)',
+            background: '#000'
           }}>
-            <ShieldAlert size={20} color="var(--accent-primary)" />
+            <img 
+              src="/logo.png" 
+              alt="Faust Store" 
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+            />
           </div>
 
           <div>
@@ -1028,14 +1040,77 @@ export function AdminDashboardPage() {
 
               {/* Webhook Box */}
               <div style={{
-                background: 'rgba(114, 137, 218, 0.08)',
-                border: '1px solid rgba(114, 137, 218, 0.3)',
-                padding: '16px',
-                borderRadius: 'var(--radius-sm)',
+                background: 'rgba(114, 137, 218, 0.06)',
+                border: '1px solid rgba(114, 137, 218, 0.35)',
+                padding: '18px',
+                borderRadius: 'var(--radius-md)',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '10px'
+                gap: '14px',
+                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.25)'
               }}>
+                {/* Bot Profile Card */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '14px',
+                  background: 'rgba(0, 0, 0, 0.35)',
+                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  borderRadius: 'var(--radius-sm)',
+                  padding: '12px 14px'
+                }}>
+                  <div style={{ position: 'relative' }}>
+                    <img
+                      src="/carmen.png"
+                      alt="Carmen Project Moon"
+                      onError={(e) => { e.target.src = CARMEN_AVATAR_URL; }}
+                      style={{
+                        width: '52px',
+                        height: '52px',
+                        objectFit: 'cover',
+                        objectPosition: 'top center',
+                        borderRadius: '50%',
+                        border: '2px solid #C41E3A',
+                        boxShadow: '0 0 12px rgba(196, 30, 58, 0.5)',
+                        background: '#1a1820'
+                      }}
+                    />
+                    <span style={{
+                      position: 'absolute',
+                      bottom: 0,
+                      right: 0,
+                      width: '12px',
+                      height: '12px',
+                      borderRadius: '50%',
+                      background: '#10b981',
+                      border: '2px solid #000'
+                    }} />
+                  </div>
+
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                      <span style={{ fontWeight: 800, fontSize: '0.95rem', color: '#fff', letterSpacing: '0.5px' }}>
+                        CARMEN
+                      </span>
+                      <span style={{
+                        background: 'rgba(196, 30, 58, 0.25)',
+                        color: '#ff6b81',
+                        border: '1px solid rgba(196, 30, 58, 0.5)',
+                        fontSize: '0.68rem',
+                        padding: '2px 8px',
+                        borderRadius: '10px',
+                        fontFamily: 'var(--font-mono)',
+                        fontWeight: 700
+                      }}>
+                        PROJECT MOON NOTIFIER
+                      </span>
+                    </div>
+                    <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '3px', lineHeight: '1.3' }}>
+                      Bot notifikasi aktif yang akan mengirimkan rincian pesanan pelanggan baru ke Discord dengan embed visual lengkap (identitas pembeli, link WhatsApp, rincian item, dan nominal tagihan).
+                    </p>
+                  </div>
+                </div>
+
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#7289da' }}>
                   <Bell size={18} />
                   <span className="mono" style={{ fontWeight: 700, fontSize: '0.86rem' }}>
@@ -1050,14 +1125,21 @@ export function AdminDashboardPage() {
                     placeholder="https://discord.com/api/webhooks/..."
                     value={profileForm.discordWebhook || ''}
                     onChange={(e) => setProfileForm({ ...profileForm, discordWebhook: e.target.value })}
-                    style={{ flex: 1 }}
+                    style={{ flex: 1, fontFamily: 'var(--font-mono)', fontSize: '0.82rem' }}
                   />
                   <button
                     type="button"
                     onClick={handleTestWebhook}
                     disabled={testingWebhook}
                     className="btn btn-sm"
-                    style={{ borderColor: '#7289da', color: '#7289da', whiteSpace: 'nowrap' }}
+                    style={{
+                      borderColor: '#7289da',
+                      color: '#fff',
+                      background: testingWebhook ? 'rgba(114, 137, 218, 0.3)' : 'rgba(114, 137, 218, 0.2)',
+                      whiteSpace: 'nowrap',
+                      minWidth: '135px',
+                      justifyContent: 'center'
+                    }}
                   >
                     <Send size={13} />
                     <span>{testingWebhook ? "MENGIRIM..." : "TES WEBHOOK"}</span>
@@ -1066,10 +1148,14 @@ export function AdminDashboardPage() {
 
                 {webhookTestResult && (
                   <div style={{
-                    fontSize: '0.78rem',
+                    fontSize: '0.8rem',
                     fontFamily: 'var(--font-mono)',
-                    color: webhookTestResult.success ? '#10b981' : '#ff2a44',
-                    marginTop: '4px'
+                    color: webhookTestResult.success ? '#10b981' : '#ff4d6d',
+                    padding: '8px 12px',
+                    borderRadius: 'var(--radius-sm)',
+                    background: webhookTestResult.success ? 'rgba(16, 185, 129, 0.1)' : 'rgba(255, 77, 109, 0.1)',
+                    border: `1px solid ${webhookTestResult.success ? 'rgba(16, 185, 129, 0.3)' : 'rgba(255, 77, 109, 0.3)'}`,
+                    lineHeight: '1.4'
                   }}>
                     {webhookTestResult.message}
                   </div>

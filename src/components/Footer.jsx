@@ -36,8 +36,19 @@ export function Footer() {
         }}>
           {/* Brand info */}
           <div style={{ maxWidth: '480px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-              <ShieldCheck size={20} color="var(--accent-primary)" />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+              <img 
+                src="/logo.png" 
+                alt="Faust Store" 
+                style={{ 
+                  width: '28px', 
+                  height: '28px', 
+                  borderRadius: '6px', 
+                  objectFit: 'cover',
+                  border: '1px solid var(--accent-primary)',
+                  boxShadow: '0 0 8px var(--accent-glow)'
+                }} 
+              />
               <span className="serif-title" style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-main)' }}>
                 {merchantProfile.shopName || "Faust Store"}
               </span>
