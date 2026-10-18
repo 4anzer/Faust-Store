@@ -6,8 +6,7 @@ import { AmbientBgmPlayer } from './AmbientBgmPlayer';
 import { 
   ShoppingCart, 
   Volume2, 
-  VolumeX,
-  Globe
+  VolumeX
 } from 'lucide-react';
 
 export function Header({ onOpenCart }) {
@@ -19,7 +18,7 @@ export function Header({ onOpenCart }) {
     playSound 
   } = useCatalog();
 
-  const { language, toggleLanguage, t } = useLanguage();
+  const { t } = useLanguage();
   const navigate = useNavigate();
 
   const totalCartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
@@ -108,7 +107,7 @@ export function Header({ onOpenCart }) {
               </span>
             </div>
             <p className="mono" style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>
-              {merchantProfile.subtitle || (language === 'en' ? "Trusted In-Game Item & Service Shop" : "Toko Item & Jasa In-Game Terpercaya")}
+              {merchantProfile.subtitle || "Trusted In-Game Item & Service Shop"}
             </p>
           </div>
         </div>
@@ -118,43 +117,6 @@ export function Header({ onOpenCart }) {
           
           {/* Ambient BGM Audio Player (SCP Sector 17) */}
           <AmbientBgmPlayer />
-
-          {/* Bilingual Language Switcher (ID / EN) */}
-          <button
-            onClick={() => {
-              playSound('click');
-              toggleLanguage();
-            }}
-            className="btn btn-sm"
-            style={{
-              padding: '6px 11px',
-              fontFamily: 'var(--font-mono)',
-              fontSize: '0.75rem',
-              fontWeight: 800,
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              borderColor: 'var(--border-color)',
-              background: 'var(--bg-secondary)',
-              cursor: 'pointer'
-            }}
-            title="Ubah Bahasa / Switch Language"
-          >
-            <Globe size={14} color="var(--accent-primary)" />
-            <span style={{ 
-              color: language === 'id' ? '#ff2a44' : 'var(--text-muted)',
-              textDecoration: language === 'id' ? 'underline' : 'none'
-            }}>
-              ID
-            </span>
-            <span style={{ color: 'var(--border-color)', margin: '0 1px' }}>|</span>
-            <span style={{ 
-              color: language === 'en' ? '#f5c518' : 'var(--text-muted)',
-              textDecoration: language === 'en' ? 'underline' : 'none'
-            }}>
-              EN
-            </span>
-          </button>
 
           {/* Sound FX Toggle */}
           <button

@@ -29,7 +29,7 @@ export function ItemCard({ item, onInspect, onEdit, isCuratorMode }) {
     e.stopPropagation();
     if (!isStoreOpen) {
       playSound('hazard');
-      alert("Maaf, toko sedang TUTUP sementara. Pemesanan tidak dapat dilakukan saat ini.");
+      alert("Sorry, the store is temporarily CLOSED. Orders are paused.");
       return;
     }
     if (isOutOfStock) {
@@ -41,7 +41,7 @@ export function ItemCard({ item, onInspect, onEdit, isCuratorMode }) {
 
   const handleDelete = (e) => {
     e.stopPropagation();
-    if (window.confirm(`Hapus item: "${item.name}"?`)) {
+    if (window.confirm(`Delete item: "${item.name}"?`)) {
       deleteItem(item.id);
     }
   };
@@ -171,7 +171,7 @@ export function ItemCard({ item, onInspect, onEdit, isCuratorMode }) {
             gap: '3px'
           }}>
             <Sparkles size={10} />
-            <span>POPULER</span>
+            <span>FEATURED</span>
           </div>
         )}
 
@@ -192,7 +192,7 @@ export function ItemCard({ item, onInspect, onEdit, isCuratorMode }) {
             boxShadow: '0 0 15px rgba(0,0,0,0.8)',
             letterSpacing: '0.08em'
           }}>
-            STOK HABIS
+            SOLD OUT
           </div>
         ) : isLowStock ? (
           <div style={{
@@ -207,7 +207,7 @@ export function ItemCard({ item, onInspect, onEdit, isCuratorMode }) {
             padding: '2px 6px',
             borderRadius: '2px'
           }}>
-            SISA {item.stock}!
+            ONLY {item.stock} LEFT!
           </div>
         ) : null}
       </div>
@@ -254,7 +254,7 @@ export function ItemCard({ item, onInspect, onEdit, isCuratorMode }) {
         }}>
           <div>
             <span className="mono" style={{ fontSize: '0.68rem', color: 'var(--text-muted)', display: 'block' }}>
-              {language === 'en' ? "PRICE" : "HARGA ITEM"}
+              PRICE
             </span>
             <span className="mono glow-text" style={{
               fontSize: '1.2rem',
@@ -343,7 +343,7 @@ export function ItemCard({ item, onInspect, onEdit, isCuratorMode }) {
               style={{ fontSize: '0.72rem', padding: '3px 8px' }}
             >
               <Trash2 size={11} />
-              <span>HAPUS</span>
+              <span>DELETE</span>
             </button>
           </div>
         )}

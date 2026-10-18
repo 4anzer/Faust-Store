@@ -25,16 +25,25 @@ export function CartModal({ onClose }) {
     isStoreOpen 
   } = useCatalog();
 
-  const { language, t } = useLanguage();
+  const { t } = useLanguage();
 
   const [buyerName, setBuyerName] = useState('');
   const [buyerContact, setBuyerContact] = useState('');
+  const [robloxUsername, setRobloxUsername] = useState('');
+  const [steamTradeUrl, setSteamTradeUrl] = useState('');
   const [selectedPayment, setSelectedPayment] = useState(
     merchantProfile.paymentMethods?.[0] || 'QRIS'
   );
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(null);
+
+  const hasRoblox = cart.some(item => item.game?.toLowerCase().includes('roblox'));
+  const hasSteam = cart.some(item => 
+    item.game?.toLowerCase().includes('steam') || 
+    item.game?.toLowerCase().includes('cs2') ||
+    item.game?.toLowerCase().includes('counter')
+  );
 
   const formatPrice = (price, currency = 'Rp') => {
     if (typeof price === 'number') {
@@ -50,15 +59,23 @@ export function CartModal({ onClose }) {
     e.preventDefault();
     if (!isStoreOpen) {
       playSound('hazard');
-      alert("Maaf, toko sedang TUTUP sementara. Pemesanan tidak dapat diproses.");
+      alert("Sorry, the store is temporarily CLOSED. Orders cannot be processed right now.");
       return;
     }
     if (!buyerName.trim()) {
-      alert("Mohon masukkan nama atau nickname game kamu!");
+      alert("Please enter your name or in-game nickname!");
       return;
     }
     if (!buyerContact.trim()) {
-      alert("Mohon masukkan nomor WhatsApp atau kontak kamu!");
+      alert("Please enter your WhatsApp or contact phone number!");
+      return;
+    }
+    if (hasRoblox && !robloxUsername.trim()) {
+      alert("Please enter your Roblox Username for delivery!");
+      return;
+    }
+    if (hasSteam && !steamTradeUrl.trim()) {
+      alert("Please enter your Steam Trade URL to receive your item!");
       return;
     }
 
@@ -69,6 +86,8 @@ export function CartModal({ onClose }) {
       const newOrder = await createOrder({
         buyerName: buyerName.trim(),
         buyerContact: buyerContact.trim(),
+        robloxUsername: robloxUsername.trim(),
+        steamTradeUrl: steamTradeUrl.trim(),
         paymentMethod: selectedPayment,
         notes: notes.trim(),
         items: [...cart],
@@ -83,7 +102,7 @@ export function CartModal({ onClose }) {
 
     } catch (err) {
       console.error(err);
-      alert("Gagal memproses pesanan: " + err.message);
+      alert("Failed to submit order: " + err.message);
     } finally {
       setIsSubmitting(false);
     }
@@ -149,13 +168,13 @@ export function CartModal({ onClose }) {
               </div>
 
               <h3 className="serif-title" style={{ fontSize: '1.3rem', color: 'var(--text-main)', marginBottom: '8px' }}>
-                PESANAN BERHASIL DISUBMIT!
+                ORDER SUBMITTED SUCCESSFULLY!
               </h3>
               <p className="mono" style={{ fontSize: '0.88rem', color: '#10b981', marginBottom: '12px' }}>
-                Kode Order: #{orderSuccess.id}
+                Order ID: #{orderSuccess.id}
               </p>
               <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', maxWidth: '480px', margin: '0 auto 20px auto', lineHeight: '1.5' }}>
-                Pesanan kamu sudah masuk ke daftar antrean admin dan notifikasi otomatis sudah dikirimkan ke Discord. WhatsApp juga telah terbuka untuk konfirmasi transfer dengan admin!
+                Your order has been recorded into the dispatch queue and notifications have been sent to Discord. WhatsApp is opening for merchant payment confirmation & instant delivery!
               </p>
 
               <button
@@ -165,7 +184,7 @@ export function CartModal({ onClose }) {
                 }}
                 className="btn btn-primary"
               >
-                KEMBALI KE ETALASE
+                BACK TO CATALOG
               </button>
             </div>
           ) : cart.length === 0 ? (
@@ -176,13 +195,13 @@ export function CartModal({ onClose }) {
             }}>
               <ShoppingCart size={46} style={{ opacity: 0.3, margin: '0 auto 12px auto' }} />
               <h3 className="serif-title" style={{ color: 'var(--text-main)', marginBottom: '6px' }}>
-                KERANJANG BELANJA MASIH KOSONG
+                YOUR CART IS EMPTY
               </h3>
               <p style={{ fontSize: '0.85rem', marginBottom: '16px' }}>
-                Silakan pilih item yang kamu inginkan dari etalase.
+                Select in-stock items from our catalog to proceed with checkout.
               </p>
               <button onClick={onClose} className="btn btn-primary btn-sm">
-                LIHAT ETALASE BARANG
+                BROWSE CATALOG
               </button>
             </div>
           ) : (
@@ -330,7 +349,7 @@ export function CartModal({ onClose }) {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--accent-secondary)' }}>
                   <AlertCircle size={16} />
                   <span className="mono" style={{ fontSize: '0.82rem', fontWeight: 700 }}>
-                    {language === 'en' ? "CUSTOMER DETAILS (NO ACCOUNT REQUIRED):" : "FORM PEMBELI (TANPA PERLU BUAT AKUN):"}
+                    CUSTOMER DETAILS (NO ACCOUNT REQUIRED):
                   </span>
                 </div>
 
@@ -341,13 +360,13 @@ export function CartModal({ onClose }) {
                 }}>
                   <div>
                     <label className="mono" style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>
-                      {t('buyerNameLabel')} *
+                      FULL NAME / IN-GAME NICKNAME *
                     </label>
                     <input
                       type="text"
                       required
                       className="input"
-                      placeholder={t('buyerNamePlaceholder')}
+                      placeholder="e.g. Roland / Dante..."
                       value={buyerName}
                       onChange={(e) => setBuyerName(e.target.value)}
                     />
@@ -355,18 +374,70 @@ export function CartModal({ onClose }) {
 
                   <div>
                     <label className="mono" style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>
-                      {t('buyerContactLabel')} *
+                      WHATSAPP NUMBER / CONTACT *
                     </label>
                     <input
                       type="text"
                       required
                       className="input"
-                      placeholder={t('buyerContactPlaceholder')}
+                      placeholder="e.g. +6281234567890"
                       value={buyerContact}
                       onChange={(e) => setBuyerContact(e.target.value)}
                     />
                   </div>
                 </div>
+
+                {/* Conditional Roblox Username Field */}
+                {hasRoblox && (
+                  <div style={{
+                    background: 'rgba(245, 197, 24, 0.06)',
+                    border: '1px solid rgba(245, 197, 24, 0.35)',
+                    padding: '10px 12px',
+                    borderRadius: 'var(--radius-sm)'
+                  }}>
+                    <label className="mono" style={{ fontSize: '0.75rem', color: '#f5c518', fontWeight: 700, display: 'block', marginBottom: '4px' }}>
+                      🎮 ROBLOX USERNAME * (REQUIRED FOR ROBLOX ITEMS)
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      className="input"
+                      placeholder="e.g. RobloxPlayer_99"
+                      value={robloxUsername}
+                      onChange={(e) => setRobloxUsername(e.target.value)}
+                      style={{ borderColor: 'rgba(245, 197, 24, 0.5)' }}
+                    />
+                    <span className="mono" style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '4px', display: 'block' }}>
+                      ℹ️ We will add/join your Roblox username to trade or deliver the items.
+                    </span>
+                  </div>
+                )}
+
+                {/* Conditional Steam Trade URL Field */}
+                {hasSteam && (
+                  <div style={{
+                    background: 'rgba(0, 180, 216, 0.06)',
+                    border: '1px solid rgba(0, 180, 216, 0.35)',
+                    padding: '10px 12px',
+                    borderRadius: 'var(--radius-sm)'
+                  }}>
+                    <label className="mono" style={{ fontSize: '0.75rem', color: '#00b4d8', fontWeight: 700, display: 'block', marginBottom: '4px' }}>
+                      🔗 STEAM TRADE URL * (REQUIRED FOR STEAM ITEMS)
+                    </label>
+                    <input
+                      type="url"
+                      required
+                      className="input"
+                      placeholder="https://steamcommunity.com/tradeoffer/new/?partner=...&token=..."
+                      value={steamTradeUrl}
+                      onChange={(e) => setSteamTradeUrl(e.target.value)}
+                      style={{ borderColor: 'rgba(0, 180, 216, 0.5)' }}
+                    />
+                    <span className="mono" style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '4px', display: 'block' }}>
+                      ℹ️ Find your link in Steam: Inventory → Trade Offers → Who can send me Trade Offers?
+                    </span>
+                  </div>
+                )}
 
                 <div style={{
                   display: 'grid',
@@ -375,7 +446,7 @@ export function CartModal({ onClose }) {
                 }}>
                   <div>
                     <label className="mono" style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>
-                      {t('paymentMethodLabel')}
+                      PAYMENT METHOD
                     </label>
                     <select
                       className="select"
@@ -390,12 +461,12 @@ export function CartModal({ onClose }) {
 
                   <div>
                     <label className="mono" style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>
-                      {t('notesLabel')}
+                      ADDITIONAL NOTES (OPTIONAL)
                     </label>
                     <input
                       type="text"
                       className="input"
-                      placeholder={t('notesPlaceholder')}
+                      placeholder="UID, server name, or delivery notes..."
                       value={notes}
                       onChange={(e) => setNotes(e.target.value)}
                     />
@@ -414,7 +485,7 @@ export function CartModal({ onClose }) {
                   fontFamily: 'var(--font-mono)',
                   textAlign: 'center'
                 }}>
-                  ⚠️ <strong>{t('storeStatusClosed')}.</strong>
+                  ⚠️ <strong>STATUS: TEMPORARILY CLOSED. Orders are paused.</strong>
                 </div>
               )}
 
@@ -440,10 +511,10 @@ export function CartModal({ onClose }) {
                 <Send size={18} />
                 <span>
                   {!isStoreOpen 
-                    ? t('storeStatusClosed') 
+                    ? "STORE CLOSED" 
                     : isSubmitting 
-                    ? t('processingBtn') 
-                    : t('orderNowBtn')}
+                    ? "PROCESSING ORDER..." 
+                    : "SUBMIT ORDER & OPEN WHATSAPP"}
                 </span>
               </button>
 
@@ -453,7 +524,7 @@ export function CartModal({ onClose }) {
                 color: 'var(--text-muted)',
                 fontFamily: 'var(--font-mono)'
               }}>
-                Pesanan akan otomatis tercatat di list admin dan terkirim notifikasinya ke Discord penjual.
+                Orders are recorded in the admin dispatch queue and automatically broadcasted to Discord.
               </p>
 
             </form>

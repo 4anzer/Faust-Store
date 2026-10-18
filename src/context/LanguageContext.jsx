@@ -193,36 +193,26 @@ export const TRANSLATIONS = {
 };
 
 export function LanguageProvider({ children }) {
-  const [language, setLanguage] = useState(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved === 'en' || saved === 'id') return saved;
-    } catch {
-      // ignore
-    }
-    return 'id'; // default Indonesian
-  });
+  const [language, setLanguage] = useState('en');
 
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEY, language);
-      document.documentElement.lang = language;
+      localStorage.setItem(STORAGE_KEY, 'en');
+      document.documentElement.lang = 'en';
     } catch {
       // ignore
     }
-  }, [language]);
+  }, []);
 
-  const toggleLanguage = () => {
-    setLanguage((prev) => (prev === 'id' ? 'en' : 'id'));
-  };
+  const toggleLanguage = () => {};
 
   const t = (key) => {
-    const dict = TRANSLATIONS[language] || TRANSLATIONS.id;
-    return dict[key] !== undefined ? dict[key] : (TRANSLATIONS.id[key] || key);
+    const dict = TRANSLATIONS.en;
+    return dict[key] !== undefined ? dict[key] : (TRANSLATIONS.en[key] || key);
   };
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, toggleLanguage, t }}>
+    <LanguageContext.Provider value={{ language: 'en', setLanguage, toggleLanguage, t }}>
       {children}
     </LanguageContext.Provider>
   );
@@ -231,12 +221,11 @@ export function LanguageProvider({ children }) {
 export function useLanguage() {
   const context = useContext(LanguageContext);
   if (!context) {
-    // Fallback if used outside provider
     return {
-      language: 'id',
+      language: 'en',
       setLanguage: () => {},
       toggleLanguage: () => {},
-      t: (key) => TRANSLATIONS.id[key] || key
+      t: (key) => TRANSLATIONS.en[key] || key
     };
   }
   return context;

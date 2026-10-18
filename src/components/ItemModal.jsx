@@ -2,18 +2,18 @@ import React, { useState } from 'react';
 import { useCatalog } from '../context/CatalogContext';
 import { useLanguage } from '../context/LanguageContext';
 import { THREAT_LEVELS } from '../data/defaultData';
-import { createDirectItemWhatsAppUrl } from '../utils/whatsappHelper';
 import { 
   X, 
   ShoppingCart, 
-  Send, 
   Truck, 
-  ShieldCheck 
+  ShieldCheck,
+  Check
 } from 'lucide-react';
 
 export function ItemModal({ item, onClose, onOpenCart }) {
   const { merchantProfile, addToCart, playSound, isStoreOpen } = useCatalog();
-  const { language, t } = useLanguage();
+  const { t } = useLanguage();
+  const [justAdded, setJustAdded] = useState(false);
 
   if (!item) return null;
 
@@ -22,7 +22,7 @@ export function ItemModal({ item, onClose, onOpenCart }) {
     color: '#00f0ff',
     bg: 'rgba(0, 240, 255, 0.15)',
     border: 'rgba(0, 240, 255, 0.6)',
-    desc: 'Item Standar'
+    desc: 'Standard Item'
   };
 
   const isOutOfStock = item.stock <= 0;
@@ -37,7 +37,7 @@ export function ItemModal({ item, onClose, onOpenCart }) {
   const handleAddToCart = () => {
     if (!isStoreOpen) {
       playSound('hazard');
-      alert("Maaf, toko sedang TUTUP sementara. Pemesanan tidak dapat dilakukan saat ini.");
+      alert("Sorry, the store is temporarily CLOSED. Orders are paused.");
       return;
     }
     if (isOutOfStock) {
@@ -45,17 +45,8 @@ export function ItemModal({ item, onClose, onOpenCart }) {
       return;
     }
     addToCart(item);
-  };
-
-  const handleDirectWhatsApp = () => {
-    if (!isStoreOpen) {
-      playSound('hazard');
-      alert("Maaf, toko sedang TUTUP sementara. Pemesanan tidak dapat dilakukan saat ini.");
-      return;
-    }
-    playSound('beep');
-    const waUrl = createDirectItemWhatsAppUrl(merchantProfile.whatsapp, item);
-    window.open(waUrl, '_blank');
+    setJustAdded(true);
+    setTimeout(() => setJustAdded(false), 2000);
   };
 
   return (
@@ -84,7 +75,7 @@ export function ItemModal({ item, onClose, onOpenCart }) {
               boxShadow: `0 0 10px ${threat.color}`
             }} />
             <span className="mono" style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
-              DETAIL ITEM // {item.game}
+              ITEM SPECIFICATION // {item.game}
             </span>
           </div>
 
@@ -162,9 +153,9 @@ export function ItemModal({ item, onClose, onOpenCart }) {
               fontSize: '0.82rem',
               fontFamily: 'var(--font-mono)'
             }}>
-              <span style={{ color: 'var(--text-muted)' }}>Status Ketersediaan:</span>
+              <span style={{ color: 'var(--text-muted)' }}>Stock Status:</span>
               <strong style={{ color: isOutOfStock ? '#ff2a44' : '#10b981' }}>
-                {isOutOfStock ? "STOK HABIS" : `TERSEDIA (${item.stock} Unit)`}
+                {isOutOfStock ? "SOLD OUT" : `IN STOCK (${item.stock} Units)`}
               </strong>
             </div>
 
@@ -178,7 +169,7 @@ export function ItemModal({ item, onClose, onOpenCart }) {
               color: 'var(--text-muted)'
             }}>
               <ShieldCheck size={15} color="#10b981" />
-              <span>Transaksi Dijamin Aman & Bergaransi</span>
+              <span>100% Guaranteed & Safe Delivery</span>
             </div>
           </div>
 
@@ -227,7 +218,7 @@ export function ItemModal({ item, onClose, onOpenCart }) {
             }}>
               <div>
                 <span className="mono" style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'block' }}>
-                  HARGA
+                  PRICE
                 </span>
                 <span className="mono glow-text" style={{
                   fontSize: '1.5rem',
@@ -242,7 +233,7 @@ export function ItemModal({ item, onClose, onOpenCart }) {
             {/* Description */}
             <div>
               <h4 className="mono" style={{ fontSize: '0.78rem', color: 'var(--accent-secondary)', marginBottom: '4px' }}>
-                // DESKRIPSI & KETERANGAN:
+                // DESCRIPTION & DETAILS:
               </h4>
               <p style={{ fontSize: '0.88rem', color: 'var(--text-main)', lineHeight: '1.5' }}>
                 {item.description}
@@ -253,7 +244,7 @@ export function ItemModal({ item, onClose, onOpenCart }) {
             {item.properties && item.properties.length > 0 && (
               <div>
                 <h4 className="mono" style={{ fontSize: '0.78rem', color: 'var(--accent-secondary)', marginBottom: '6px' }}>
-                  // SPESIFIKASI:
+                  // ITEM SPECIFICATIONS:
                 </h4>
                 <div style={{
                   display: 'grid',
@@ -292,52 +283,62 @@ export function ItemModal({ item, onClose, onOpenCart }) {
               <Truck size={18} color="#10b981" style={{ flexShrink: 0, marginTop: '2px' }} />
               <div>
                 <span className="mono" style={{ fontSize: '0.74rem', color: '#10b981', fontWeight: 700 }}>
-                  {t('deliveryMethodTitle')}
+                  DELIVERY METHOD & FULFILLMENT:
                 </span>
                 <p style={{ fontSize: '0.8rem', color: 'var(--text-main)', marginTop: '2px' }}>
-                  {item.deliveryMethod || (language === 'en' ? "Direct chat delivery upon payment confirmation." : "Pengiriman via chat langsung setelah pembayaran diverifikasi.")}
+                  {item.deliveryMethod || "Direct transfer & fulfillment via WhatsApp or Steam Trade after confirmation."}
                 </p>
               </div>
             </div>
 
-            {/* Action Buttons */}
+            {/* Action Buttons: Add to Cart & Open Cart */}
             <div style={{
               marginTop: 'auto',
               paddingTop: '16px',
               borderTop: '1px solid var(--border-color)',
-              display: 'grid',
-              gridTemplateColumns: '1fr 1fr',
+              display: 'flex',
               gap: '10px'
             }}>
               <button
                 onClick={handleAddToCart}
                 disabled={isOutOfStock || !isStoreOpen}
-                className="btn"
+                className="btn btn-primary"
                 style={{
-                  borderColor: 'var(--accent-primary)',
-                  color: 'var(--accent-primary)',
+                  flex: 1,
+                  padding: '12px 18px',
+                  fontSize: '0.92rem',
                   opacity: (isOutOfStock || !isStoreOpen) ? 0.4 : 1,
                   cursor: (isOutOfStock || !isStoreOpen) ? 'not-allowed' : 'pointer'
                 }}
               >
-                <ShoppingCart size={15} />
-                <span>{!isStoreOpen ? t('closedBtn') : `+ ${t('cartButton')}`}</span>
+                {justAdded ? (
+                  <>
+                    <Check size={16} />
+                    <span>ADDED TO CART!</span>
+                  </>
+                ) : (
+                  <>
+                    <ShoppingCart size={16} />
+                    <span>{!isStoreOpen ? "STORE CLOSED" : isOutOfStock ? "OUT OF STOCK" : "+ ADD TO CART"}</span>
+                  </>
+                )}
               </button>
 
               <button
-                onClick={handleDirectWhatsApp}
-                disabled={isOutOfStock || !isStoreOpen}
-                className="btn btn-success"
-                style={{
-                  opacity: (isOutOfStock || !isStoreOpen) ? 0.4 : 1,
-                  cursor: (isOutOfStock || !isStoreOpen) ? 'not-allowed' : 'pointer',
-                  background: !isStoreOpen ? 'var(--bg-tertiary)' : undefined,
-                  borderColor: !isStoreOpen ? 'var(--border-color)' : undefined,
-                  color: !isStoreOpen ? 'var(--text-muted)' : undefined
+                onClick={() => {
+                  playSound('click');
+                  onClose();
+                  onOpenCart();
                 }}
+                className="btn"
+                style={{
+                  padding: '12px 16px',
+                  borderColor: 'var(--border-color)',
+                  color: 'var(--text-main)'
+                }}
+                title="View Cart & Checkout"
               >
-                <Send size={15} />
-                <span>{!isStoreOpen ? t('closedBtn') : (language === 'en' ? "BUY VIA WHATSAPP" : "BELI VIA WHATSAPP")}</span>
+                <span>VIEW CART</span>
               </button>
             </div>
 

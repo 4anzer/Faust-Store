@@ -5,7 +5,7 @@ import { Radio, Send, MessageSquare, CheckCircle2, AlertOctagon } from 'lucide-r
 
 export function Banner() {
   const { merchantProfile, items, isStoreOpen } = useCatalog();
-  const { language, t } = useLanguage();
+  const { t } = useLanguage();
   const inStockCount = items.filter(i => i.stock > 0).length;
 
   return (
@@ -47,16 +47,16 @@ export function Banner() {
             </span>
             <span style={{ color: 'var(--border-color)' }}>•</span>
             <span style={{ color: 'var(--text-muted)' }}>
-              {language === 'en' ? "Guest Direct Checkout" : "Tanpa Registrasi Akun"}
+              Guest Direct Checkout (No Registration Required)
             </span>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px', color: 'var(--text-muted)' }}>
             <span>
-              TOTAL ITEM: <strong style={{ color: 'var(--text-main)' }}>{items.length}</strong>
+              TOTAL ITEMS: <strong style={{ color: 'var(--text-main)' }}>{items.length}</strong>
             </span>
             <span>
-              {language === 'en' ? "IN STOCK:" : "SIAP KIRIM:"} <strong style={{ color: '#10b981' }}>{inStockCount}</strong>
+              READY TO DISPATCH: <strong style={{ color: '#10b981' }}>{inStockCount}</strong>
             </span>
           </div>
         </div>
@@ -76,9 +76,7 @@ export function Banner() {
           }}>
             <AlertOctagon size={18} style={{ flexShrink: 0 }} />
             <span style={{ fontSize: '0.84rem', fontFamily: 'var(--font-mono)' }}>
-              <strong>{language === 'en' ? "NOTICE:" : "PEMBERITAHUAN:"}</strong> {language === 'en' 
-                ? "The store is currently CLOSED. You can still inspect catalog specs, but order submissions are temporarily paused." 
-                : "Toko saat ini sedang TUTUP. Kamu tetap dapat melihat katalog dan spesifikasi item, namun pemesanan sementara tidak dapat dilakukan."}
+              <strong>NOTICE:</strong> The store is currently CLOSED. You can still inspect catalog specs, but order submissions are temporarily paused.
             </span>
           </div>
         )}
@@ -107,7 +105,7 @@ export function Banner() {
                 fontWeight: 700,
                 marginRight: '8px'
               }}>
-                [{language === 'en' ? "BROADCAST" : "PENGUMUMAN"}]:
+                [BROADCAST]:
               </span>
               <span style={{ fontSize: '0.88rem', color: 'var(--text-main)' }}>
                 {merchantProfile.announcement || t('defaultAnnouncement')}
@@ -159,7 +157,7 @@ export function Banner() {
           fontFamily: 'var(--font-mono)'
         }}>
           <span style={{ color: 'var(--accent-secondary)' }}>
-            {language === 'en' ? "ACCEPTED PAYMENTS:" : "PEMBAYARAN TERSEDIA:"}
+            ACCEPTED PAYMENTS:
           </span>
           {merchantProfile.paymentMethods?.map((pay, i) => (
             <span key={i} style={{
@@ -174,7 +172,7 @@ export function Banner() {
             </span>
           ))}
           <span style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '4px', color: '#10b981' }}>
-            <CheckCircle2 size={14} /> {language === 'en' ? "100% SECURE & VERIFIED" : "100% AMAN & BERGARANSI"}
+            <CheckCircle2 size={14} /> 100% SECURE & VERIFIED
           </span>
         </div>
 

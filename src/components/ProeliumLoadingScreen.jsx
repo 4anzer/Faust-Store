@@ -297,7 +297,7 @@ export function ProeliumLoadingScreen({ onFinish }) {
         title="Lewati intro langsung"
       >
         <FastForward size={13} color="#ff1929" />
-        <span>LEWATI [ESC]</span>
+        <span>SKIP SEQUENCE [ESC]</span>
       </button>
 
       {/* In-Game Slash / Shake / Glitch Keyframe Styles */}

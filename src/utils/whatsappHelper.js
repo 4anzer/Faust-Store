@@ -63,20 +63,29 @@ export function createCartCheckoutWhatsAppUrl(adminPhone, orderData) {
     )
     .join('\n');
 
+  let extraDeliveryInfo = '';
+  if (orderData.robloxUsername) {
+    extraDeliveryInfo += `🎮 Roblox User : ${orderData.robloxUsername}\n`;
+  }
+  if (orderData.steamTradeUrl) {
+    extraDeliveryInfo += `🔗 Steam Trade : ${orderData.steamTradeUrl}\n`;
+  }
+
   const message =
     `═════════════════════════════════\n` +
-    `🛒 NOTIFIKASI ORDER - FAUST STORE\n` +
-    `No. Pesanan: #${orderData.id}\n` +
+    `🛒 NEW ORDER - FAUST STORE\n` +
+    `Order ID: #${orderData.id}\n` +
     `═════════════════════════════════\n` +
-    `👤 Pembeli    : ${orderData.buyerName || '-'}\n` +
-    `📱 Kontak WA  : ${orderData.buyerContact || '-'}\n` +
-    `💳 Pembayaran : ${orderData.paymentMethod || 'QRIS'}\n` +
-    `📝 Catatan    : ${orderData.notes || '-'}\n\n` +
-    `📦 DAFTAR BARANG YANG DIPESAN:\n` +
+    `👤 Customer    : ${orderData.buyerName || '-'}\n` +
+    `📱 Contact / WA : ${orderData.buyerContact || '-'}\n` +
+    extraDeliveryInfo +
+    `💳 Payment     : ${orderData.paymentMethod || 'QRIS'}\n` +
+    `📝 Notes       : ${orderData.notes || '-'}\n\n` +
+    `📦 ORDERED ITEMS:\n` +
     `${itemsText}\n\n` +
-    `💰 TOTAL TAGIHAN: ${formatRupiah(orderData.totalPrice)}\n` +
+    `💰 TOTAL AMOUNT: ${formatRupiah(orderData.totalPrice)}\n` +
     `═════════════════════════════════\n` +
-    `Halo Admin, saya sudah submit pesanan melalui website. Mohon instruksi nomor rekening/QRIS untuk transfer ya!`;
+    `Hello Faust Store Admin, I have submitted an order on your website. Please provide payment transfer instructions to proceed with fulfillment!`;
 
   return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
 }

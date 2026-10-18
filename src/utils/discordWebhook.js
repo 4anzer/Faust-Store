@@ -154,13 +154,13 @@ export async function sendDiscordOrderNotification(webhookUrl, orderData) {
           },
           fields: [
             {
-              name: "👤 Data Pelanggan",
-              value: `**Nama:** ${orderData.buyerName || 'Anonim'}\n**Kontak/WA:** \`${orderData.buyerContact || '-'}\`${waLink}\n**Metode Bayar:** \`${orderData.paymentMethod || 'QRIS'}\``,
+              name: "👤 Customer Information",
+              value: `**Name:** ${orderData.buyerName || 'Anonymous'}\n**Contact/WA:** \`${orderData.buyerContact || '-'}\`${waLink}\n**Payment:** \`${orderData.paymentMethod || 'QRIS'}\`${orderData.robloxUsername ? `\n🎮 **Roblox Username:** \`${orderData.robloxUsername}\`` : ''}${orderData.steamTradeUrl ? `\n🔗 **Steam Trade URL:** [Open Trade Link](${orderData.steamTradeUrl})` : ''}`,
               inline: true
             },
             {
-              name: "📊 Status & Tagihan",
-              value: `**Status:** 🟡 \`${orderData.status || 'Pending'}\`\n**Total Pembayaran:**\n### 💰 **${totalAmount}**`,
+              name: "📊 Status & Total",
+              value: `**Status:** 🟡 \`${orderData.status || 'Pending'}\`\n**Total Due:**\n### 💰 **${totalAmount}**`,
               inline: true
             },
             {

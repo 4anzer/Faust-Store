@@ -110,7 +110,7 @@ export function Footer() {
             <button
               onClick={scrollToTop}
               className="btn btn-sm"
-              title="Kembali ke atas"
+              title="Back to Top"
             >
               <ArrowUp size={14} />
               <span>{t('backToTop')}</span>

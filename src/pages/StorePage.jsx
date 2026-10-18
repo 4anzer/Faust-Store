@@ -12,6 +12,7 @@ import { CartModal } from '../components/CartModal';
 import { Footer } from '../components/Footer';
 import { ProeliumLoadingScreen } from '../components/ProeliumLoadingScreen';
 import { FloatingEmbers } from '../components/FloatingEmbers';
+import { FeaturedStockCarousel } from '../components/FeaturedStockCarousel';
 import { PackageX, Plus } from 'lucide-react';
 
 export function StorePage() {
@@ -19,22 +20,10 @@ export function StorePage() {
   const { isAuthenticated } = useAuth();
   const { t } = useLanguage();
 
-  // Proelium Fatale Loading Screen Intro State (plays when visitor enters the store)
-  const [showIntro, setShowIntro] = useState(() => {
-    try {
-      const seen = sessionStorage.getItem('faust_proelium_seen');
-      return !seen;
-    } catch {
-      return true;
-    }
-  });
+  // Proelium Fatale Loading Screen Intro (plays every time visitor enters or refreshes the page)
+  const [showIntro, setShowIntro] = useState(true);
 
   const handleFinishIntro = () => {
-    try {
-      sessionStorage.setItem('faust_proelium_seen', 'true');
-    } catch {
-      // ignore
-    }
     setShowIntro(false);
   };
 
@@ -105,6 +94,14 @@ export function StorePage() {
 
       {/* Broadcast Banner */}
       <Banner />
+
+      {/* Dynamic In-Stock Artifacts Carousel (Auto-rotating showcase) */}
+      <FeaturedStockCarousel 
+        onInspect={(item) => {
+          playSound('click');
+          setInspectedItem(item);
+        }}
+      />
 
       {/* Filter and Search Bar */}
       <FilterBar
