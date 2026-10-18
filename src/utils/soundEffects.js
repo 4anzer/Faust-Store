@@ -172,13 +172,35 @@ class SoundSystem {
       if (!this.ctx) return;
       const now = this.ctx.currentTime;
 
+      // 0. Initial Slash Impact Noise
+      try {
+        const bufferSize = Math.floor(this.ctx.sampleRate * 0.08);
+        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / bufferSize);
+        const slashNoise = this.ctx.createBufferSource();
+        slashNoise.buffer = buffer;
+        const slashFilter = this.ctx.createBiquadFilter();
+        slashFilter.type = 'highpass';
+        slashFilter.frequency.setValueAtTime(1400, now);
+        const slashGain = this.ctx.createGain();
+        slashGain.gain.setValueAtTime(0.14, now);
+        slashGain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+        slashNoise.connect(slashFilter);
+        slashFilter.connect(slashGain);
+        slashGain.connect(this.ctx.destination);
+        slashNoise.start(now);
+      } catch {
+        // ignore
+      }
+
       // 1. Heavy Sub-Bass Boom
       const subOsc = this.ctx.createOscillator();
       const subGain = this.ctx.createGain();
       subOsc.type = 'sine';
-      subOsc.frequency.setValueAtTime(85, now);
+      subOsc.frequency.setValueAtTime(95, now);
       subOsc.frequency.exponentialRampToValueAtTime(32, now + 1.2);
-      subGain.gain.setValueAtTime(0.25, now);
+      subGain.gain.setValueAtTime(0.28, now);
       subGain.gain.exponentialRampToValueAtTime(0.001, now + 2.0);
       subOsc.connect(subGain);
       subGain.connect(this.ctx.destination);
