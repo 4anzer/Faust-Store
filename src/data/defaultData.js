@@ -248,7 +248,7 @@ export const DEFAULT_REVIEWS = [
   {
     id: "REV-101",
     orderId: "ORD-94812",
-    customerName: "Operative-492",
+    customerName: "Customer#664631713",
     game: "Roblox",
     rating: 5,
     comment: "Super fast Roblox trade! Seller joined in less than 2 minutes. Very trusted and legit!",
@@ -257,7 +257,7 @@ export const DEFAULT_REVIEWS = [
   {
     id: "REV-102",
     orderId: "ORD-94801",
-    customerName: "Agent-Roland-18",
+    customerName: "Customer#819342017",
     game: "Steam / CS2",
     rating: 5,
     comment: "Steam Trade URL offer came through instantly. Smooth checkout without making an account.",
@@ -266,7 +266,7 @@ export const DEFAULT_REVIEWS = [
   {
     id: "REV-103",
     orderId: "ORD-94788",
-    customerName: "Spectre-77",
+    customerName: "Customer#448109254",
     game: "Limbus Company",
     rating: 5,
     comment: "Top notch service! Fast response on WhatsApp and quick verification. 10/10.",
@@ -275,7 +275,7 @@ export const DEFAULT_REVIEWS = [
   {
     id: "REV-104",
     orderId: "ORD-94770",
-    customerName: "D-Class-931",
+    customerName: "Customer#923814670",
     game: "Roblox",
     rating: 5,
     comment: "Barang aman, fast respond banget adminnya. Recommended seller buat item game!",
@@ -284,7 +284,7 @@ export const DEFAULT_REVIEWS = [
   {
     id: "REV-105",
     orderId: "ORD-94755",
-    customerName: "Shadow-Walker-02",
+    customerName: "Customer#372951486",
     game: "Steam / CS2",
     rating: 5,
     comment: "Fast Steam delivery, skin received exactly as described. Will buy again here.",

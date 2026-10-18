@@ -11,7 +11,7 @@ const STORAGE_KEYS = {
   PROFILE: 'faust_store_profile_v3',
   CART: 'faust_store_cart_v3',
   ORDERS: 'faust_store_orders_v3',
-  REVIEWS: 'faust_store_reviews_v3',
+  REVIEWS: 'faust_store_reviews_v4',
   CHATS: 'faust_store_order_chats_v1',
   SOUND: 'faust_store_sound_v3'
 };
@@ -86,7 +86,16 @@ export function CatalogProvider({ children }) {
   const [reviews, setReviews] = useState(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEYS.REVIEWS);
-      if (saved) return JSON.parse(saved);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return parsed.map((r) => {
+          if (r.customerName && !r.customerName.startsWith('Customer#')) {
+            const digits = Math.floor(100000000 + Math.random() * 900000000);
+            return { ...r, customerName: `Customer#${digits}` };
+          }
+          return r;
+        });
+      }
     } catch {
       // ignore
     }
