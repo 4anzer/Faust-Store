@@ -1,39 +1,38 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useCatalog } from '../context/CatalogContext';
-import { FastForward } from 'lucide-react';
 
 export function ProeliumLoadingScreen({ onFinish }) {
   const { playSound } = useCatalog();
   const [phase, setPhase] = useState('blackout'); // 'blackout' -> 'slam' -> 'sustain' -> 'slash_exit'
   const audioTriggeredRef = useRef(false);
 
-  // Trigger audio & sequence lifecycle
+  // Trigger audio & snappy, fast sequence lifecycle (completed in ~1.1s)
   useEffect(() => {
-    // Phase 1: Quick initial blackout & slash flash (0ms - 200ms)
+    // Phase 1: Rapid initial slam (80ms)
     const t0 = setTimeout(() => {
       setPhase('slam');
       if (!audioTriggeredRef.current) {
         audioTriggeredRef.current = true;
         playSound('proelium');
       }
-    }, 180);
+    }, 80);
 
-    // Phase 2: Sustain epic tension (200ms - 2700ms)
+    // Phase 2: Short sustain (300ms)
     const t1 = setTimeout(() => {
       setPhase('sustain');
-    }, 600);
+    }, 320);
 
-    // Phase 3: Slash cut exit (2700ms - 3100ms)
+    // Phase 3: Fast slash exit (850ms)
     const t2 = setTimeout(() => {
       setPhase('slash_exit');
-    }, 2800);
+    }, 880);
 
-    // Phase 4: Finish & unmount
+    // Phase 4: Finish & unmount (1150ms)
     const t3 = setTimeout(() => {
       if (onFinish) onFinish();
-    }, 3250);
+    }, 1150);
 
-    // User gesture handler (in case browser autoplay policies require interaction)
+    // User gesture handler
     const handleGesture = () => {
       if (!audioTriggeredRef.current) {
         audioTriggeredRef.current = true;
@@ -268,37 +267,6 @@ export function ProeliumLoadingScreen({ onFinish }) {
         }}
         className="hazard-stripe"
       />
-
-      {/* 6. Discreet Skip Button */}
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          handleSkip();
-        }}
-        style={{
-          position: 'absolute',
-          bottom: '24px',
-          right: '24px',
-          zIndex: 20,
-          background: 'rgba(0, 0, 0, 0.6)',
-          border: '1px solid rgba(255, 25, 41, 0.4)',
-          color: 'rgba(255, 255, 255, 0.75)',
-          padding: '6px 14px',
-          borderRadius: '4px',
-          fontSize: '0.74rem',
-          fontFamily: "'JetBrains Mono', monospace",
-          letterSpacing: '0.08em',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '6px',
-          transition: 'all 0.2s ease'
-        }}
-        title="Lewati intro langsung"
-      >
-        <FastForward size={13} color="#ff1929" />
-        <span>SKIP SEQUENCE [ESC]</span>
-      </button>
 
       {/* In-Game Slash / Shake / Glitch Keyframe Styles */}
       <style>{`

@@ -243,3 +243,52 @@ export const DEFAULT_ORDERS = [
     ]
   }
 ];
+
+export const DEFAULT_REVIEWS = [
+  {
+    id: "REV-101",
+    orderId: "ORD-94812",
+    customerName: "Operative-492",
+    game: "Roblox",
+    rating: 5,
+    comment: "Super fast Roblox trade! Seller joined in less than 2 minutes. Very trusted and legit!",
+    createdAt: new Date(Date.now() - 3600000 * 3).toISOString()
+  },
+  {
+    id: "REV-102",
+    orderId: "ORD-94801",
+    customerName: "Agent-Roland-18",
+    game: "Steam / CS2",
+    rating: 5,
+    comment: "Steam Trade URL offer came through instantly. Smooth checkout without making an account.",
+    createdAt: new Date(Date.now() - 3600000 * 8).toISOString()
+  },
+  {
+    id: "REV-103",
+    orderId: "ORD-94788",
+    customerName: "Spectre-77",
+    game: "Limbus Company",
+    rating: 5,
+    comment: "Top notch service! Fast response on WhatsApp and quick verification. 10/10.",
+    createdAt: new Date(Date.now() - 3600000 * 18).toISOString()
+  },
+  {
+    id: "REV-104",
+    orderId: "ORD-94770",
+    customerName: "D-Class-931",
+    game: "Roblox",
+    rating: 5,
+    comment: "Barang aman, fast respond banget adminnya. Recommended seller buat item game!",
+    createdAt: new Date(Date.now() - 3600000 * 32).toISOString()
+  },
+  {
+    id: "REV-105",
+    orderId: "ORD-94755",
+    customerName: "Shadow-Walker-02",
+    game: "Steam / CS2",
+    rating: 5,
+    comment: "Fast Steam delivery, skin received exactly as described. Will buy again here.",
+    createdAt: new Date(Date.now() - 3600000 * 45).toISOString()
+  }
+];
+

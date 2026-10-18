@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { DEFAULT_ITEMS, DEFAULT_GAMES, DEFAULT_MERCHANT_PROFILE, DEFAULT_ORDERS } from '../data/defaultData';
+import { DEFAULT_ITEMS, DEFAULT_GAMES, DEFAULT_MERCHANT_PROFILE, DEFAULT_ORDERS, DEFAULT_REVIEWS } from '../data/defaultData';
 import { soundEffects } from '../utils/soundEffects';
 import { sendDiscordOrderNotification } from '../utils/discordWebhook';
 
@@ -11,6 +11,7 @@ const STORAGE_KEYS = {
   PROFILE: 'faust_store_profile_v3',
   CART: 'faust_store_cart_v3',
   ORDERS: 'faust_store_orders_v3',
+  REVIEWS: 'faust_store_reviews_v3',
   SOUND: 'faust_store_sound_v3'
 };
 
@@ -80,6 +81,17 @@ export function CatalogProvider({ children }) {
     return [];
   });
 
+  // Customer Reviews State
+  const [reviews, setReviews] = useState(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.REVIEWS);
+      if (saved) return JSON.parse(saved);
+    } catch {
+      // ignore
+    }
+    return DEFAULT_REVIEWS;
+  });
+
   // Sound effects toggle
   const [soundEnabled, setSoundEnabled] = useState(() => {
     try {
@@ -131,6 +143,14 @@ export function CatalogProvider({ children }) {
       console.warn("Storage quota error", e);
     }
   }, [cart]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.REVIEWS, JSON.stringify(reviews));
+    } catch (e) {
+      console.warn("Storage quota error", e);
+    }
+  }, [reviews]);
 
   useEffect(() => {
     try {
@@ -321,6 +341,23 @@ export function CatalogProvider({ children }) {
     playSound('glitch');
   };
 
+  // Review System Functions
+  const addReview = (reviewPayload) => {
+    const newReview = {
+      id: `REV-${Date.now().toString(36).toUpperCase()}`,
+      createdAt: new Date().toISOString(),
+      ...reviewPayload
+    };
+    setReviews((prev) => [newReview, ...prev]);
+    playSound('equip');
+    return newReview;
+  };
+
+  const deleteReview = (reviewId) => {
+    setReviews((prev) => prev.filter((r) => r.id !== reviewId));
+    playSound('beep');
+  };
+
   // Cart Management
   const addToCart = (item) => {
     playSound('equip');
@@ -435,6 +472,9 @@ export function CatalogProvider({ children }) {
         createOrder,
         updateOrderStatus,
         deleteOrder,
+        reviews,
+        addReview,
+        deleteReview,
         addToCart,
         removeFromCart,
         updateCartQuantity,

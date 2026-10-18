@@ -13,6 +13,7 @@ import { Footer } from '../components/Footer';
 import { ProeliumLoadingScreen } from '../components/ProeliumLoadingScreen';
 import { FloatingEmbers } from '../components/FloatingEmbers';
 import { FeaturedStockCarousel } from '../components/FeaturedStockCarousel';
+import { ReviewsTicker } from '../components/ReviewsTicker';
 import { PackageX, Plus } from 'lucide-react';
 
 export function StorePage() {
@@ -173,6 +174,9 @@ export function StorePage() {
           </div>
         )}
       </main>
+
+      {/* Continuously Moving Customer Reviews Marquee */}
+      <ReviewsTicker />
 
       {/* Footer */}
       <Footer />

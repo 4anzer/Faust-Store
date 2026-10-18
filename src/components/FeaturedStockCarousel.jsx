@@ -294,24 +294,11 @@ export function FeaturedStockCarousel({ onInspect }) {
               color: '#f5c518',
               letterSpacing: '0.03em',
               textShadow: '0 0 16px rgba(245, 197, 24, 0.5), 0 2px 4px rgba(0,0,0,0.8)',
-              margin: '0 0 4px 0',
+              margin: 0,
               lineHeight: 1.2
             }}>
               {currentItem.name?.toUpperCase()}
             </h2>
-
-            <p className="mono" style={{
-              fontSize: '0.78rem',
-              color: '#d1d5db',
-              margin: 0,
-              maxWidth: '560px',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-              textShadow: '0 1px 3px rgba(0,0,0,0.9)'
-            }}>
-              {currentItem.description || "Active artifact containment unit ready for immediate fulfillment."}
-            </p>
           </div>
 
           {/* Center-Bottom Pagination Dots */}

@@ -5,36 +5,40 @@ import { useLanguage } from '../context/LanguageContext';
 export function AmbientBgmPlayer() {
   const { t } = useLanguage();
   const [isPlaying, setIsPlaying] = useState(false);
-  const [volume, setVolume] = useState(0.4);
-  const [hasStartedOnce, setHasStartedOnce] = useState(false);
   const audioRef = useRef(null);
 
   useEffect(() => {
-    // Initialize audio element
+    // Initialize audio element at 100% volume (locked, unchangeable)
     const audio = new Audio('/audio/bgm.mp3');
     audio.loop = true;
-    audio.volume = volume;
+    audio.volume = 1.0;
     audioRef.current = audio;
 
-    // Try auto-play on first user click anywhere in the window
-    const handleFirstClick = () => {
-      if (!hasStartedOnce && audioRef.current) {
+    // Immediately attempt autoplay
+    audio.play()
+      .then(() => setIsPlaying(true))
+      .catch(() => {
+        // Browser autoplay restriction, will activate on first interaction
+      });
+
+    // Ensure audio starts on first user interaction anywhere
+    const handleGesture = () => {
+      if (audioRef.current) {
+        audioRef.current.volume = 1.0;
         audioRef.current.play()
-          .then(() => {
-            setIsPlaying(true);
-            setHasStartedOnce(true);
-          })
-          .catch(() => {
-            // Autoplay policy prevented playback, user can click play button manually
-          });
+          .then(() => setIsPlaying(true))
+          .catch(() => {});
       }
-      window.removeEventListener('click', handleFirstClick);
     };
 
-    window.addEventListener('click', handleFirstClick);
+    window.addEventListener('pointerdown', handleGesture, { once: true });
+    window.addEventListener('keydown', handleGesture, { once: true });
+    window.addEventListener('scroll', handleGesture, { once: true });
 
     return () => {
-      window.removeEventListener('click', handleFirstClick);
+      window.removeEventListener('pointerdown', handleGesture);
+      window.removeEventListener('keydown', handleGesture);
+      window.removeEventListener('scroll', handleGesture);
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current = null;

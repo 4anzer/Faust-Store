@@ -4,6 +4,7 @@ import { CatalogProvider } from './context/CatalogContext';
 import { AuthProvider } from './context/AuthContext';
 import { LanguageProvider } from './context/LanguageContext';
 import { StorePage } from './pages/StorePage';
+import { OrderStatusPage } from './pages/OrderStatusPage';
 import { AdminLoginPage } from './pages/AdminLoginPage';
 import { AdminDashboardPage } from './pages/AdminDashboardPage';
 import { AdminRouteGuard } from './components/AdminRouteGuard';
@@ -17,6 +18,9 @@ export default function App() {
           <Routes>
             {/* Public Customer Store Page (Guest - No Account/Register required) */}
             <Route path="/" element={<StorePage />} />
+
+            {/* Live Order Status & Customer Review Page */}
+            <Route path="/order-status/:orderId" element={<OrderStatusPage />} />
 
             {/* Public Admin Login Route */}
             <Route path="/admin/login" element={<AdminLoginPage />} />

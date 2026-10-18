@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useCatalog } from '../context/CatalogContext';
 import { useLanguage } from '../context/LanguageContext';
 import { createCartCheckoutWhatsAppUrl } from '../utils/whatsappHelper';
@@ -10,10 +11,25 @@ import {
   Send, 
   ShoppingCart, 
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  Shuffle
 } from 'lucide-react';
 
+const ANONYMOUS_NAME_PREFIXES = [
+  "Agent", "Operative", "Sinner", "Spectre", "Ghost",
+  "Overseer", "Visitor", "Drifter", "Containment", "Shadow",
+  "Cipher", "Phantom", "Archon", "Collector", "Vanguard",
+  "D-Class", "Hunter", "Echo", "Seeker", "Wanderer"
+];
+
+function generateAnonymousName() {
+  const prefix = ANONYMOUS_NAME_PREFIXES[Math.floor(Math.random() * ANONYMOUS_NAME_PREFIXES.length)];
+  const code = Math.floor(100 + Math.random() * 900);
+  return `${prefix}-${code}`;
+}
+
 export function CartModal({ onClose }) {
+  const navigate = useNavigate();
   const { 
     cart, 
     updateCartQuantity, 
@@ -27,7 +43,7 @@ export function CartModal({ onClose }) {
 
   const { t } = useLanguage();
 
-  const [buyerName, setBuyerName] = useState('');
+  const [buyerName, setBuyerName] = useState(() => generateAnonymousName());
   const [buyerContact, setBuyerContact] = useState('');
   const [robloxUsername, setRobloxUsername] = useState('');
   const [steamTradeUrl, setSteamTradeUrl] = useState('');
@@ -94,11 +110,13 @@ export function CartModal({ onClose }) {
         totalPrice: totalPrice
       });
 
-      setOrderSuccess(newOrder);
-
       // 2. Open WhatsApp with dynamic checkout template
       const waUrl = createCartCheckoutWhatsAppUrl(merchantProfile.whatsapp, newOrder);
       window.open(waUrl, '_blank');
+
+      // 3. Close modal and navigate immediately to order waiting & review tracking page
+      onClose();
+      navigate(`/order-status/${newOrder.id}`);
 
     } catch (err) {
       console.error(err);
@@ -359,17 +377,35 @@ export function CartModal({ onClose }) {
                   gap: '12px'
                 }}>
                   <div>
-                    <label className="mono" style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>
-                      FULL NAME / IN-GAME NICKNAME *
-                    </label>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                      <label className="mono" style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>
+                        ANONYMOUS CODENAME *
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          playSound('click');
+                          setBuyerName(generateAnonymousName());
+                        }}
+                        className="btn btn-sm"
+                        style={{ padding: '2px 8px', fontSize: '0.68rem', display: 'flex', alignItems: 'center', gap: '4px' }}
+                        title="Generate random anonymous codename"
+                      >
+                        <Shuffle size={11} color="var(--accent-primary)" />
+                        <span>REROLL</span>
+                      </button>
+                    </div>
                     <input
                       type="text"
                       required
                       className="input"
-                      placeholder="e.g. Roland / Dante..."
+                      placeholder="e.g. Operative-492"
                       value={buyerName}
                       onChange={(e) => setBuyerName(e.target.value)}
                     />
+                    <span className="mono" style={{ fontSize: '0.66rem', color: 'var(--text-muted)', marginTop: '2px', display: 'block' }}>
+                      🎭 Kept anonymous for security & verified review showcase.
+                    </span>
                   </div>
 
                   <div>

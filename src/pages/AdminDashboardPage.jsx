@@ -20,7 +20,8 @@ import {
   Download, 
   RotateCcw, 
   Send, 
-  ExternalLink
+  ExternalLink,
+  CheckCircle
 } from 'lucide-react';
 
 export function AdminDashboardPage() {
@@ -513,8 +514,41 @@ export function AdminDashboardPage() {
                             </span>
                           </div>
 
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <span className="mono" style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>Ubah Status:</span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                            {isPending && (
+                              <button
+                                onClick={() => {
+                                  updateOrderStatus(ord.id, 'Selesai');
+                                }}
+                                className="btn btn-sm btn-success"
+                                style={{
+                                  padding: '4px 10px',
+                                  fontSize: '0.74rem',
+                                  fontWeight: 800,
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '5px'
+                                }}
+                                title="Klik jika barang sudah dikirimkan ke pembeli"
+                              >
+                                <CheckCircle size={13} />
+                                <span>BARANG SUDAH DIKIRIM</span>
+                              </button>
+                            )}
+
+                            <a
+                              href={`/order-status/${ord.id}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="btn btn-sm"
+                              style={{ padding: '4px 8px', fontSize: '0.72rem', display: 'flex', alignItems: 'center', gap: '4px' }}
+                              title="Buka halaman status & review pembeli"
+                            >
+                              <ExternalLink size={12} />
+                              <span>Live Page</span>
+                            </a>
+
+                            <span className="mono" style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>Status:</span>
                             <select
                               className="select"
                               value={ord.status}

@@ -173,7 +173,7 @@ export const TRANSLATIONS = {
     closeBtn: "CLOSE",
 
     // Footer
-    footerDesc: "Trusted in-game merchant and item showcase platform inspired by Project Moon & SCP Foundation.",
+    footerDesc: "Trusted merchant and premium in-game item showcase platform.",
     contactTitle: "// CONTACT & SERVICES:",
     supportHours: "Customer Support: 24/7 Online",
     backToTop: "BACK TO TOP",

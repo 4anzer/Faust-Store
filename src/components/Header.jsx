@@ -4,17 +4,13 @@ import { useCatalog } from '../context/CatalogContext';
 import { useLanguage } from '../context/LanguageContext';
 import { AmbientBgmPlayer } from './AmbientBgmPlayer';
 import { 
-  ShoppingCart, 
-  Volume2, 
-  VolumeX
+  ShoppingCart
 } from 'lucide-react';
 
 export function Header({ onOpenCart }) {
   const { 
     merchantProfile, 
     cart, 
-    soundEnabled, 
-    toggleSound, 
     playSound 
   } = useCatalog();
 
@@ -115,21 +111,8 @@ export function Header({ onOpenCart }) {
         {/* Action Controls */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
           
-          {/* Ambient BGM Audio Player (SCP Sector 17) */}
+          {/* Ambient BGM Audio Player (SCP Sector 17 - Always 100% volume) */}
           <AmbientBgmPlayer />
-
-          {/* Sound FX Toggle */}
-          <button
-            onClick={toggleSound}
-            className="btn btn-sm"
-            title={soundEnabled ? t('soundMute') : t('soundUnmute')}
-            style={{
-              padding: '7px 10px',
-              color: soundEnabled ? 'var(--accent-primary)' : 'var(--text-muted)'
-            }}
-          >
-            {soundEnabled ? <Volume2 size={16} /> : <VolumeX size={16} />}
-          </button>
 
           {/* Keranjang Belanja Button */}
           <button
