@@ -204,6 +204,82 @@ export const DEFAULT_ITEMS = [
       { label: "Bonus", value: "First Time 2x Crystal Aktif" }
     ],
     featured: false
+  },
+  {
+    id: "item-rbx-01",
+    name: "Blox Fruits - Permanent Kitsune Fruit",
+    game: "Roblox",
+    threat: "ALEPH",
+    price: 350000,
+    currency: "Rp",
+    stock: 3,
+    tag: "Permanent Fruit",
+    image: "https://images.unsplash.com/photo-1563089145-599997674d42?w=600&auto=format&fit=crop&q=80",
+    description: "Permanent Kitsune Fruit di Blox Fruits Roblox. Buah mistis terkuat siap digunakan selamanya. Pengiriman cepat via trade server in-game.",
+    deliveryMethod: "Join server Roblox bersama admin via Roblox Username, trade langsung aman 100%.",
+    properties: [
+      { label: "Tipe", value: "Permanent Beast" },
+      { label: "Metode", value: "In-Game Direct Trade" },
+      { label: "Keamanan", value: "100% Anti Rollback" }
+    ],
+    featured: true
+  },
+  {
+    id: "item-rbx-02",
+    name: "Roblox 1,000 Robux Clean Gift / Group Funds",
+    game: "Roblox",
+    threat: "TETH",
+    price: 75000,
+    currency: "Rp",
+    stock: 25,
+    tag: "Currency",
+    image: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&auto=format&fit=crop&q=80",
+    description: "Robux bersih 100% legal via gamepass / group payout. Tanpa perlu memberikan password akun Roblox.",
+    deliveryMethod: "Kirim username Roblox dan buat gamepass sesuai nominal, proses 5 menit.",
+    properties: [
+      { label: "Sumber", value: "Group Funds Resmi" },
+      { label: "Tanpa Login", value: "100% Aman" },
+      { label: "Pajak", value: "Tax Covered" }
+    ],
+    featured: true
+  },
+  {
+    id: "item-stm-01",
+    name: "AK-47 | Redline (Field-Tested) CS2 Skin",
+    game: "Steam / CS2",
+    threat: "HE",
+    price: 245000,
+    currency: "Rp",
+    stock: 2,
+    tag: "Weapon Skin",
+    image: "https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?w=600&auto=format&fit=crop&q=80",
+    description: "Skin legendaris Counter-Strike 2 AK-47 Redline Field-Tested. Desain motif carbon fiber hitam merah premium.",
+    deliveryMethod: "Kirim instan via Steam Trade Offer URL dalam 2 menit setelah checkout.",
+    properties: [
+      { label: "Kondisi", value: "Field-Tested (Float 0.18)" },
+      { label: "Pengiriman", value: "Instant Trade Offer" },
+      { label: "Status", value: "Tradeable Ready" }
+    ],
+    featured: true
+  },
+  {
+    id: "item-stm-02",
+    name: "Steam Wallet Code IDR 100.000",
+    game: "Steam / CS2",
+    threat: "SAFE",
+    price: 104000,
+    currency: "Rp",
+    stock: 15,
+    tag: "Voucher",
+    image: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=600&auto=format&fit=crop&q=80",
+    description: "Kode voucher resmi Steam Wallet Indonesia Rp 100.000. Langsung menambah saldo akun Steam tanpa biaya admin tersembunyi.",
+    deliveryMethod: "Kode voucher digital langsung dikirim via chat admin / WhatsApp setelah pembayaran.",
+    properties: [
+      { label: "Region", value: "Indonesia (IDR)" },
+      { label: "Masa Berlaku", value: "Permanent / Tidak Kadaluarsa" },
+      { label: "Proses", value: "Instan 1 Menit" }
+    ],
+    featured: false
   }
 ];
 
