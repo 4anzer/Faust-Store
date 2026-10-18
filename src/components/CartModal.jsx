@@ -15,17 +15,10 @@ import {
   Shuffle
 } from 'lucide-react';
 
-const ANONYMOUS_NAME_PREFIXES = [
-  "Agent", "Operative", "Sinner", "Spectre", "Ghost",
-  "Overseer", "Visitor", "Drifter", "Containment", "Shadow",
-  "Cipher", "Phantom", "Archon", "Collector", "Vanguard",
-  "D-Class", "Hunter", "Echo", "Seeker", "Wanderer"
-];
-
 function generateAnonymousName() {
-  const prefix = ANONYMOUS_NAME_PREFIXES[Math.floor(Math.random() * ANONYMOUS_NAME_PREFIXES.length)];
-  const code = Math.floor(100 + Math.random() * 900);
-  return `${prefix}-${code}`;
+  // Pre-assigned random identifier format: Customer#664631713
+  const randomDigits = Math.floor(100000000 + Math.random() * 900000000);
+  return `Customer#${randomDigits}`;
 }
 
 export function CartModal({ onClose }) {
@@ -79,11 +72,7 @@ export function CartModal({ onClose }) {
       return;
     }
     if (!buyerName.trim()) {
-      alert("Please enter your name or in-game nickname!");
-      return;
-    }
-    if (!buyerContact.trim()) {
-      alert("Please enter your WhatsApp or contact phone number!");
+      alert("Please enter your customer codename!");
       return;
     }
     if (hasRoblox && !robloxUsername.trim()) {
@@ -101,7 +90,7 @@ export function CartModal({ onClose }) {
       // 1. Save order into orders database & trigger Discord webhook
       const newOrder = await createOrder({
         buyerName: buyerName.trim(),
-        buyerContact: buyerContact.trim(),
+        buyerContact: buyerContact.trim() || 'In-App Live Chat (No WhatsApp)',
         robloxUsername: robloxUsername.trim(),
         steamTradeUrl: steamTradeUrl.trim(),
         paymentMethod: selectedPayment,
@@ -110,11 +99,7 @@ export function CartModal({ onClose }) {
         totalPrice: totalPrice
       });
 
-      // 2. Open WhatsApp with dynamic checkout template
-      const waUrl = createCartCheckoutWhatsAppUrl(merchantProfile.whatsapp, newOrder);
-      window.open(waUrl, '_blank');
-
-      // 3. Close modal and navigate immediately to order waiting & review tracking page
+      // 2. Direct navigation to waiting status page (WhatsApp chat is accessible there)
       onClose();
       navigate(`/order-status/${newOrder.id}`);
 
@@ -377,49 +362,41 @@ export function CartModal({ onClose }) {
                   gap: '12px'
                 }}>
                   <div>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-                      <label className="mono" style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>
-                        ANONYMOUS CODENAME *
-                      </label>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          playSound('click');
-                          setBuyerName(generateAnonymousName());
-                        }}
-                        className="btn btn-sm"
-                        style={{ padding: '2px 8px', fontSize: '0.68rem', display: 'flex', alignItems: 'center', gap: '4px' }}
-                        title="Generate random anonymous codename"
-                      >
-                        <Shuffle size={11} color="var(--accent-primary)" />
-                        <span>REROLL</span>
-                      </button>
-                    </div>
+                    <label className="mono" style={{ fontSize: '0.74rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>
+                      ASSIGNED ANONYMOUS CODENAME
+                    </label>
                     <input
                       type="text"
-                      required
+                      readOnly
                       className="input"
-                      placeholder="e.g. Operative-492"
                       value={buyerName}
-                      onChange={(e) => setBuyerName(e.target.value)}
+                      style={{
+                        background: 'var(--bg-tertiary)',
+                        color: 'var(--accent-secondary)',
+                        fontWeight: 700,
+                        cursor: 'default',
+                        letterSpacing: '0.5px'
+                      }}
                     />
                     <span className="mono" style={{ fontSize: '0.66rem', color: 'var(--text-muted)', marginTop: '2px', display: 'block' }}>
-                      🎭 Kept anonymous for security & verified review showcase.
+                      🔒 Pre-assigned system ID. Kept anonymous for security & verified review showcase.
                     </span>
                   </div>
 
                   <div>
                     <label className="mono" style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>
-                      WHATSAPP NUMBER / CONTACT *
+                      WHATSAPP NUMBER (OPTIONAL)
                     </label>
                     <input
                       type="text"
-                      required
                       className="input"
-                      placeholder="e.g. +6281234567890"
+                      placeholder="e.g. 08123456789 (leave blank for In-App Live Chat)"
                       value={buyerContact}
                       onChange={(e) => setBuyerContact(e.target.value)}
                     />
+                    <span className="mono" style={{ fontSize: '0.66rem', color: '#00b4d8', marginTop: '2px', display: 'block' }}>
+                      💬 Don't have WhatsApp? You can chat with the seller directly in-app on the waiting page!
+                    </span>
                   </div>
                 </div>
 
@@ -550,7 +527,7 @@ export function CartModal({ onClose }) {
                     ? "STORE CLOSED" 
                     : isSubmitting 
                     ? "PROCESSING ORDER..." 
-                    : "SUBMIT ORDER & OPEN WHATSAPP"}
+                    : "SUBMIT ORDER & TRACK STATUS"}
                 </span>
               </button>
 
@@ -560,7 +537,7 @@ export function CartModal({ onClose }) {
                 color: 'var(--text-muted)',
                 fontFamily: 'var(--font-mono)'
               }}>
-                Orders are recorded in the admin dispatch queue and automatically broadcasted to Discord.
+                Orders are queued instantly. You will be taken to the tracking page where you can live chat with the seller or open WhatsApp.
               </p>
 
             </form>

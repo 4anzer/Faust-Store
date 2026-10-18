@@ -21,7 +21,8 @@ import {
   RotateCcw, 
   Send, 
   ExternalLink,
-  CheckCircle
+  CheckCircle,
+  MessageSquare
 } from 'lucide-react';
 
 export function AdminDashboardPage() {
@@ -45,11 +46,14 @@ export function AdminDashboardPage() {
     resetToDefaults, 
     exportDatabaseJSON, 
     importDatabaseJSON, 
-    playSound 
+    playSound,
+    orderChats,
+    sendOrderChatMessage
   } = useCatalog();
 
   const [activeTab, setActiveTab] = useState('orders');
   const [editingItem, setEditingItem] = useState(null);
+  const [adminChatInputs, setAdminChatInputs] = useState({});
 
   // Form State
   const initialFormState = {
@@ -482,6 +486,7 @@ export function AdminDashboardPage() {
                     const cleanWA = (ord.buyerContact || '').replace(/[^0-9]/g, '');
                     const isPending = ord.status === 'Pending';
                     const isDone = ord.status === 'Selesai';
+                    const chatList = (orderChats && orderChats[ord.id]) || [];
 
                     return (
                       <div
@@ -637,6 +642,109 @@ export function AdminDashboardPage() {
                             <strong>Catatan Pembeli:</strong> <em>"{ord.notes}"</em>
                           </div>
                         )}
+
+                        {/* IN-APP LIVE CHAT BOX WITH CUSTOMER */}
+                        <div style={{
+                          background: 'var(--bg-tertiary)',
+                          border: '1px solid var(--border-color)',
+                          borderRadius: 'var(--radius-sm)',
+                          padding: '12px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '8px'
+                        }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <MessageSquare size={14} color="var(--accent-secondary)" />
+                              <span className="mono" style={{ fontSize: '0.78rem', fontWeight: 800, color: 'var(--accent-secondary)' }}>
+                                LIVE CHAT DENGAN PEMBELI ({ord.buyerName}):
+                              </span>
+                              {chatList.length > 0 && (
+                                <span className="badge" style={{ background: 'var(--accent-primary)', color: '#fff', fontSize: '0.65rem', fontWeight: 800 }}>
+                                  {chatList.length} Pesan
+                                </span>
+                              )}
+                            </div>
+                            <span className="mono" style={{ fontSize: '0.68rem', color: '#10b981', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#10b981', display: 'inline-block' }} />
+                              Real-Time Sync Aktif
+                            </span>
+                          </div>
+
+                          {/* Chat messages stream */}
+                          <div style={{
+                            maxHeight: '160px',
+                            overflowY: 'auto',
+                            background: 'var(--bg-primary)',
+                            border: '1px solid var(--border-color)',
+                            borderRadius: '4px',
+                            padding: '10px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '8px'
+                          }}>
+                            {chatList.length === 0 ? (
+                              <div className="mono" style={{ fontSize: '0.74rem', color: 'var(--text-muted)', textAlign: 'center', padding: '10px' }}>
+                                Belum ada percakapan untuk pesanan ini. Anda dapat mengirimkan pesan ke pembeli di bawah.
+                              </div>
+                            ) : (
+                              chatList.map((msg) => (
+                                <div
+                                  key={msg.id}
+                                  style={{
+                                    alignSelf: msg.sender === 'admin' ? 'flex-end' : 'flex-start',
+                                    maxWidth: '85%',
+                                    background: msg.sender === 'admin' ? 'rgba(255, 42, 68, 0.15)' : 'rgba(0, 180, 216, 0.15)',
+                                    border: `1px solid ${msg.sender === 'admin' ? 'var(--accent-primary)' : '#00b4d8'}`,
+                                    borderRadius: '6px',
+                                    padding: '8px 12px'
+                                  }}
+                                >
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '2px' }}>
+                                    <strong style={{ fontSize: '0.74rem', color: msg.sender === 'admin' ? 'var(--accent-primary)' : '#00b4d8' }}>
+                                      {msg.sender === 'admin' ? '🛡️ Admin (Penjual)' : (msg.senderName || ord.buyerName)}
+                                    </strong>
+                                    <span className="mono" style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>
+                                      {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                    </span>
+                                  </div>
+                                  <div style={{ fontSize: '0.82rem', color: 'var(--text-main)', wordBreak: 'break-word', whiteSpace: 'pre-wrap' }}>
+                                    {msg.text}
+                                  </div>
+                                </div>
+                              ))
+                            )}
+                          </div>
+
+                          {/* Admin reply input */}
+                          <form
+                            onSubmit={(e) => {
+                              e.preventDefault();
+                              const text = adminChatInputs[ord.id] || '';
+                              if (!text.trim()) return;
+                              sendOrderChatMessage(ord.id, 'admin', text, 'Admin (Penjual)');
+                              setAdminChatInputs((prev) => ({ ...prev, [ord.id]: '' }));
+                            }}
+                            style={{ display: 'flex', gap: '8px' }}
+                          >
+                            <input
+                              type="text"
+                              className="input"
+                              placeholder={`Balas pesan atau beri info pengiriman ke ${ord.buyerName}...`}
+                              value={adminChatInputs[ord.id] || ''}
+                              onChange={(e) => setAdminChatInputs((prev) => ({ ...prev, [ord.id]: e.target.value }))}
+                              style={{ fontSize: '0.82rem', padding: '6px 10px', flex: 1 }}
+                            />
+                            <button
+                              type="submit"
+                              className="btn btn-primary"
+                              style={{ padding: '6px 14px', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '5px', whiteSpace: 'nowrap' }}
+                            >
+                              <Send size={13} />
+                              <span>Balas Chat</span>
+                            </button>
+                          </form>
+                        </div>
 
                         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                           <button

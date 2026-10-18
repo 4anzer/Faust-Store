@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useCatalog } from '../context/CatalogContext';
 import { 
@@ -18,7 +18,14 @@ import {
 export function OrderStatusPage() {
   const { orderId } = useParams();
   const navigate = useNavigate();
-  const { orders, merchantProfile, addReview, playSound } = useCatalog();
+  const { 
+    orders, 
+    merchantProfile, 
+    addReview, 
+    playSound,
+    orderChats,
+    sendOrderChatMessage 
+  } = useCatalog();
 
   // Find target order
   const [currentOrder, setCurrentOrder] = useState(() => {
@@ -41,6 +48,16 @@ export function OrderStatusPage() {
   const [hoverRating, setHoverRating] = useState(0);
   const [comment, setComment] = useState('');
   const [reviewSubmitted, setReviewSubmitted] = useState(false);
+
+  // Chat input state
+  const [customerChatInput, setCustomerChatInput] = useState('');
+  const chatEndRef = useRef(null);
+
+  // Auto-scroll chat to bottom
+  const chatMessages = (orderChats && currentOrder && orderChats[currentOrder.id]) || [];
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [chatMessages.length]);
 
   // Poll for status updates (e.g., when admin clicks "MARK AS DELIVERED")
   useEffect(() => {
@@ -132,6 +149,24 @@ export function OrderStatusPage() {
     addReview(reviewPayload);
     setReviewSubmitted(true);
   };
+
+  const handleSendCustomerChat = (e) => {
+    e.preventDefault();
+    if (!customerChatInput.trim()) return;
+    sendOrderChatMessage(
+      currentOrder.id,
+      'customer',
+      customerChatInput.trim(),
+      currentOrder.buyerName || 'Customer'
+    );
+    setCustomerChatInput('');
+  };
+
+  const whatsappUrl = merchantProfile.whatsapp 
+    ? `https://wa.me/${merchantProfile.whatsapp.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(
+        `Halo Admin Faust Store! Saya ${currentOrder.buyerName} ingin konfirmasi pesanan #${currentOrder.id}.\nTotal: ${formatPrice(currentOrder.totalPrice)}\nMohon segera diproses ya!`
+      )}`
+    : null;
 
   return (
     <div style={{
@@ -255,6 +290,192 @@ export function OrderStatusPage() {
                   : "Your order is queued in the merchant terminal. Once the merchant clicks the delivery confirmation, this page will instantly update and unlock the review form."}
               </p>
             </div>
+          </div>
+        </div>
+
+        {/* MERCHANT COMMUNICATION & LIVE IN-APP CHAT (FOR CUSTOMERS WITH OR WITHOUT WHATSAPP) */}
+        <div style={{
+          background: 'var(--bg-secondary)',
+          border: '1px solid var(--border-color)',
+          borderRadius: '8px',
+          padding: '20px',
+          marginBottom: '24px',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.3)'
+        }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: '16px',
+            flexWrap: 'wrap',
+            gap: '12px',
+            borderBottom: '1px solid var(--border-color)',
+            paddingBottom: '12px'
+          }}>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <MessageSquare size={18} color="var(--accent-secondary)" />
+                <h3 className="serif-title" style={{ fontSize: '1.15rem', margin: 0, color: 'var(--text-main)' }}>
+                  CHAT PENJUAL & LIVE SUPPORT
+                </h3>
+              </div>
+              <p className="mono" style={{ fontSize: '0.74rem', color: 'var(--text-muted)', margin: '4px 0 0 0' }}>
+                Gunakan tombol WhatsApp di samping, atau chat langsung di bawah jika tidak memiliki WhatsApp.
+              </p>
+            </div>
+
+            {/* WhatsApp direct chat button */}
+            {whatsappUrl && (
+              <a
+                href={whatsappUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="btn btn-success"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  textDecoration: 'none',
+                  padding: '9px 18px',
+                  fontSize: '0.82rem',
+                  fontWeight: 800,
+                  boxShadow: '0 0 15px rgba(16, 185, 129, 0.2)'
+                }}
+              >
+                <Send size={15} />
+                <span>CHAT PENJUAL VIA WHATSAPP</span>
+              </a>
+            )}
+          </div>
+
+          {/* Live In-App Chat Container */}
+          <div style={{
+            background: 'var(--bg-primary)',
+            border: '1px solid var(--border-color)',
+            borderRadius: '6px',
+            overflow: 'hidden'
+          }}>
+            <div style={{
+              background: 'var(--bg-tertiary)',
+              padding: '8px 14px',
+              borderBottom: '1px solid var(--border-color)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              fontSize: '0.74rem'
+            }}>
+              <span className="mono" style={{ color: 'var(--accent-secondary)', fontWeight: 700 }}>
+                // SISTEM CHAT LANGSUNG DENGAN PENJUAL / ADMIN
+              </span>
+              <span className="mono" style={{ color: '#10b981', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                <span style={{
+                  width: '7px',
+                  height: '7px',
+                  borderRadius: '50%',
+                  background: '#10b981',
+                  display: 'inline-block',
+                  boxShadow: '0 0 6px #10b981'
+                }} />
+                Online Real-Time
+              </span>
+            </div>
+
+            {/* Message Feed */}
+            <div style={{
+              height: '220px',
+              overflowY: 'auto',
+              padding: '14px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '10px',
+              background: 'rgba(0,0,0,0.2)'
+            }}>
+              {chatMessages.length === 0 ? (
+                <div style={{
+                  margin: 'auto',
+                  textAlign: 'center',
+                  color: 'var(--text-muted)',
+                  fontSize: '0.8rem',
+                  padding: '16px'
+                }}>
+                  <p className="mono" style={{ marginBottom: '4px' }}>💬 Belum ada percakapan untuk pesanan #{currentOrder.id}.</p>
+                  <p style={{ margin: 0, fontSize: '0.75rem' }}>
+                    Ketik pesan di bawah ini jika kamu tidak punya WhatsApp atau ingin langsung bertanya ke admin. Admin dapat membalas chat ini langsung dari terminal admin!
+                  </p>
+                </div>
+              ) : (
+                chatMessages.map((msg) => {
+                  const isAdmin = msg.sender === 'admin';
+                  return (
+                    <div
+                      key={msg.id}
+                      style={{
+                        alignSelf: isAdmin ? 'flex-start' : 'flex-end',
+                        maxWidth: '82%',
+                        background: isAdmin ? 'rgba(16, 185, 129, 0.12)' : 'rgba(255, 42, 68, 0.14)',
+                        border: `1px solid ${isAdmin ? '#10b981' : 'var(--accent-primary)'}`,
+                        borderRadius: '8px',
+                        padding: '10px 14px',
+                        boxShadow: isAdmin ? '0 0 10px rgba(16, 185, 129, 0.1)' : '0 0 10px rgba(255, 42, 68, 0.1)'
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                        <span className="badge" style={{
+                          background: isAdmin ? '#10b981' : 'var(--accent-primary)',
+                          color: '#000',
+                          fontSize: '0.64rem',
+                          fontWeight: 900
+                        }}>
+                          {isAdmin ? '🛡️ PENJUAL / ADMIN' : (msg.senderName || currentOrder.buyerName)}
+                        </span>
+                        <span className="mono" style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>
+                          {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: '0.86rem', color: 'var(--text-main)', wordBreak: 'break-word', whiteSpace: 'pre-wrap', lineHeight: '1.4' }}>
+                        {msg.text}
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+              <div ref={chatEndRef} />
+            </div>
+
+            {/* Input message form */}
+            <form
+              onSubmit={handleSendCustomerChat}
+              style={{
+                padding: '10px 14px',
+                background: 'var(--bg-tertiary)',
+                borderTop: '1px solid var(--border-color)',
+                display: 'flex',
+                gap: '8px'
+              }}
+            >
+              <input
+                type="text"
+                className="input"
+                placeholder="Ketik pesan atau konfirmasi untuk admin toko di sini..."
+                value={customerChatInput}
+                onChange={(e) => setCustomerChatInput(e.target.value)}
+                style={{ flex: 1, fontSize: '0.84rem' }}
+              />
+              <button
+                type="submit"
+                className="btn btn-primary"
+                style={{
+                  padding: '8px 18px',
+                  fontSize: '0.84rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                <Send size={14} />
+                <span>KIRIM</span>
+              </button>
+            </form>
           </div>
         </div>
 

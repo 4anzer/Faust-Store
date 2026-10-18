@@ -12,6 +12,7 @@ const STORAGE_KEYS = {
   CART: 'faust_store_cart_v3',
   ORDERS: 'faust_store_orders_v3',
   REVIEWS: 'faust_store_reviews_v3',
+  CHATS: 'faust_store_order_chats_v1',
   SOUND: 'faust_store_sound_v3'
 };
 
@@ -92,6 +93,17 @@ export function CatalogProvider({ children }) {
     return DEFAULT_REVIEWS;
   });
 
+  // Order Live Chat Messages State (Keyed by orderId)
+  const [orderChats, setOrderChats] = useState(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.CHATS);
+      if (saved) return JSON.parse(saved);
+    } catch {
+      // ignore
+    }
+    return {};
+  });
+
   // Sound effects toggle
   const [soundEnabled, setSoundEnabled] = useState(() => {
     try {
@@ -154,12 +166,41 @@ export function CatalogProvider({ children }) {
 
   useEffect(() => {
     try {
+      localStorage.setItem(STORAGE_KEYS.CHATS, JSON.stringify(orderChats));
+    } catch (e) {
+      console.warn("Storage quota error", e);
+    }
+  }, [orderChats]);
+
+  useEffect(() => {
+    try {
       localStorage.setItem(STORAGE_KEYS.SOUND, JSON.stringify(soundEnabled));
       soundEffects.enabled = soundEnabled;
     } catch (e) {
       console.warn("Storage error", e);
     }
   }, [soundEnabled]);
+
+  // Cross-tab real-time sync for orders, chats, and reviews
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === STORAGE_KEYS.ORDERS && e.newValue) {
+        try {
+          setOrders(JSON.parse(e.newValue));
+        } catch {}
+      } else if (e.key === STORAGE_KEYS.CHATS && e.newValue) {
+        try {
+          setOrderChats(JSON.parse(e.newValue));
+        } catch {}
+      } else if (e.key === STORAGE_KEYS.REVIEWS && e.newValue) {
+        try {
+          setReviews(JSON.parse(e.newValue));
+        } catch {}
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
 
   // Audio helper
   const playSound = (type = 'click') => {
@@ -358,6 +399,28 @@ export function CatalogProvider({ children }) {
     playSound('beep');
   };
 
+  // Order Live Chat Functions
+  const sendOrderChatMessage = (orderId, sender, text, senderName) => {
+    if (!orderId || !text || !text.trim()) return null;
+    const msg = {
+      id: `MSG-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+      sender, // 'customer' | 'admin'
+      senderName: senderName || (sender === 'admin' ? 'Merchant Admin' : 'Customer'),
+      text: text.trim(),
+      timestamp: new Date().toISOString()
+    };
+
+    setOrderChats((prev) => {
+      const currentList = prev[orderId] || [];
+      return {
+        ...prev,
+        [orderId]: [...currentList, msg]
+      };
+    });
+    playSound('beep');
+    return msg;
+  };
+
   // Cart Management
   const addToCart = (item) => {
     playSound('equip');
@@ -475,6 +538,8 @@ export function CatalogProvider({ children }) {
         reviews,
         addReview,
         deleteReview,
+        orderChats,
+        sendOrderChatMessage,
         addToCart,
         removeFromCart,
         updateCartQuantity,
