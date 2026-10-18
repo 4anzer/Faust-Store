@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useCatalog } from '../context/CatalogContext';
+import { useLanguage } from '../context/LanguageContext';
 import { createCartCheckoutWhatsAppUrl } from '../utils/whatsappHelper';
 import { 
   X, 
@@ -23,6 +24,8 @@ export function CartModal({ onClose }) {
     playSound,
     isStoreOpen 
   } = useCatalog();
+
+  const { language, t } = useLanguage();
 
   const [buyerName, setBuyerName] = useState('');
   const [buyerContact, setBuyerContact] = useState('');
@@ -105,7 +108,7 @@ export function CartModal({ onClose }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <ShoppingCart size={18} color="var(--accent-primary)" />
             <span className="serif-title" style={{ fontSize: '1.05rem', fontWeight: 800, color: 'var(--text-main)' }}>
-              KERANJANG BELANJA ({totalItemsCount} ITEM)
+              {t('cartTitle')} ({totalItemsCount} {t('itemsCount')})
             </span>
           </div>
 
@@ -297,12 +300,12 @@ export function CartModal({ onClose }) {
                   style={{ fontSize: '0.74rem' }}
                 >
                   <Trash2 size={12} />
-                  <span>KOSONGKAN</span>
+                  <span>{t('clearCartBtn')}</span>
                 </button>
 
                 <div style={{ textAlign: 'right' }}>
                   <span className="mono" style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block' }}>
-                    TOTAL PEMBAYARAN:
+                    {t('totalOrderLabel')}
                   </span>
                   <span className="mono glow-text" style={{
                     fontSize: '1.45rem',
@@ -327,7 +330,7 @@ export function CartModal({ onClose }) {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--accent-secondary)' }}>
                   <AlertCircle size={16} />
                   <span className="mono" style={{ fontSize: '0.82rem', fontWeight: 700 }}>
-                    FORM PEMBELI (TANPA PERLU BUAT AKUN):
+                    {language === 'en' ? "CUSTOMER DETAILS (NO ACCOUNT REQUIRED):" : "FORM PEMBELI (TANPA PERLU BUAT AKUN):"}
                   </span>
                 </div>
 
@@ -338,13 +341,13 @@ export function CartModal({ onClose }) {
                 }}>
                   <div>
                     <label className="mono" style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>
-                      NAMA / NICKNAME GAME *:
+                      {t('buyerNameLabel')} *
                     </label>
                     <input
                       type="text"
                       required
                       className="input"
-                      placeholder="Contoh: Dante / Player1"
+                      placeholder={t('buyerNamePlaceholder')}
                       value={buyerName}
                       onChange={(e) => setBuyerName(e.target.value)}
                     />
@@ -352,13 +355,13 @@ export function CartModal({ onClose }) {
 
                   <div>
                     <label className="mono" style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>
-                      NOMOR WHATSAPP KAMU *:
+                      {t('buyerContactLabel')} *
                     </label>
                     <input
                       type="text"
                       required
                       className="input"
-                      placeholder="Contoh: 08123456789"
+                      placeholder={t('buyerContactPlaceholder')}
                       value={buyerContact}
                       onChange={(e) => setBuyerContact(e.target.value)}
                     />
@@ -372,7 +375,7 @@ export function CartModal({ onClose }) {
                 }}>
                   <div>
                     <label className="mono" style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>
-                      METODE PEMBAYARAN:
+                      {t('paymentMethodLabel')}
                     </label>
                     <select
                       className="select"
@@ -387,12 +390,12 @@ export function CartModal({ onClose }) {
 
                   <div>
                     <label className="mono" style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '4px' }}>
-                      CATATAN UNTUK PENJUAL (OPSIONAL):
+                      {t('notesLabel')}
                     </label>
                     <input
                       type="text"
                       className="input"
-                      placeholder="Contoh: Tolong kirim sekarang ya min"
+                      placeholder={t('notesPlaceholder')}
                       value={notes}
                       onChange={(e) => setNotes(e.target.value)}
                     />
@@ -411,7 +414,7 @@ export function CartModal({ onClose }) {
                   fontFamily: 'var(--font-mono)',
                   textAlign: 'center'
                 }}>
-                  ⚠️ <strong>TOKO SEDANG TUTUP SEMENTARA.</strong> Pemesanan tidak dapat diproses saat ini.
+                  ⚠️ <strong>{t('storeStatusClosed')}.</strong>
                 </div>
               )}
 
@@ -437,10 +440,10 @@ export function CartModal({ onClose }) {
                 <Send size={18} />
                 <span>
                   {!isStoreOpen 
-                    ? "TOKO SEDANG TUTUP (TIDAK DAPAT MEMESAN)" 
+                    ? t('storeStatusClosed') 
                     : isSubmitting 
-                    ? "MEMPROSES PESANAN..." 
-                    : "KONFIRMASI PESANAN & LANJUT KE WHATSAPP"}
+                    ? t('processingBtn') 
+                    : t('orderNowBtn')}
                 </span>
               </button>
 

@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useCatalog } from '../context/CatalogContext';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { Header } from '../components/Header';
 import { Banner } from '../components/Banner';
 import { FilterBar } from '../components/FilterBar';
@@ -10,11 +11,13 @@ import { ItemModal } from '../components/ItemModal';
 import { CartModal } from '../components/CartModal';
 import { Footer } from '../components/Footer';
 import { ProeliumLoadingScreen } from '../components/ProeliumLoadingScreen';
+import { FloatingEmbers } from '../components/FloatingEmbers';
 import { PackageX, Plus } from 'lucide-react';
 
 export function StorePage() {
   const { items, playSound } = useCatalog();
   const { isAuthenticated } = useAuth();
+  const { t } = useLanguage();
 
   // Proelium Fatale Loading Screen Intro State (plays when visitor enters the store)
   const [showIntro, setShowIntro] = useState(() => {
@@ -85,8 +88,11 @@ export function StorePage() {
   }, [items, selectedGame, inStockOnly, searchQuery, sortBy]);
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', position: 'relative' }}>
       
+      {/* Ambient Floating Anomaly Embers Background Effect */}
+      <FloatingEmbers />
+
       {/* Proelium Fatale Loading Screen Intro */}
       {showIntro && (
         <ProeliumLoadingScreen onFinish={handleFinishIntro} />
@@ -95,7 +101,6 @@ export function StorePage() {
       {/* Header */}
       <Header
         onOpenCart={() => setIsCartOpen(true)}
-        onReplayIntro={() => setShowIntro(true)}
       />
 
       {/* Broadcast Banner */}
@@ -120,7 +125,9 @@ export function StorePage() {
         margin: '0 auto',
         padding: '10px 20px 40px 20px',
         flex: 1,
-        width: '100%'
+        width: '100%',
+        position: 'relative',
+        zIndex: 1
       }}>
         {filteredItems.length === 0 ? (
           <div style={{
@@ -133,10 +140,10 @@ export function StorePage() {
           }}>
             <PackageX size={52} color="var(--accent-primary)" style={{ opacity: 0.6, margin: '0 auto 16px auto' }} />
             <h3 className="serif-title" style={{ fontSize: '1.25rem', color: 'var(--text-main)', marginBottom: '8px' }}>
-              TIDAK ADA BARANG DITEMUKAN
+              {t('noItemsTitle')}
             </h3>
             <p className="mono" style={{ fontSize: '0.85rem', color: 'var(--text-muted)', maxWidth: '480px', margin: '0 auto 20px auto' }}>
-              Tidak ada barang yang cocok dengan kata kunci pencarian atau filter yang dipilih.
+              {t('noItemsDesc')}
             </p>
             <button
               onClick={() => {
@@ -147,7 +154,7 @@ export function StorePage() {
               }}
               className="btn btn-sm btn-primary"
             >
-              RESET FILTER
+              {t('resetFilterBtn')}
             </button>
           </div>
         ) : (

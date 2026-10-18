@@ -1,10 +1,12 @@
 import React from 'react';
 import { useCatalog } from '../context/CatalogContext';
+import { useLanguage } from '../context/LanguageContext';
 import { THREAT_LEVELS } from '../data/defaultData';
 import { ShoppingCart, Eye, Edit3, Trash2, Sparkles, Check, Package } from 'lucide-react';
 
 export function ItemCard({ item, onInspect, onEdit, isCuratorMode }) {
   const { addToCart, deleteItem, playSound, isStoreOpen } = useCatalog();
+  const { language, t } = useLanguage();
 
   const threat = THREAT_LEVELS[item.threat] || {
     name: item.threat || 'SAFE',
@@ -252,7 +254,7 @@ export function ItemCard({ item, onInspect, onEdit, isCuratorMode }) {
         }}>
           <div>
             <span className="mono" style={{ fontSize: '0.68rem', color: 'var(--text-muted)', display: 'block' }}>
-              HARGA ITEM
+              {language === 'en' ? "PRICE" : "HARGA ITEM"}
             </span>
             <span className="mono glow-text" style={{
               fontSize: '1.2rem',
@@ -264,9 +266,9 @@ export function ItemCard({ item, onInspect, onEdit, isCuratorMode }) {
           </div>
 
           <div className="mono" style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>
-            <span>Stok: </span>
+            <span>{t('stockLabel')} </span>
             <strong style={{ color: isOutOfStock ? '#ff2a44' : '#10b981' }}>
-              {isOutOfStock ? "Habis" : `${item.stock} Ready`}
+              {isOutOfStock ? t('outOfStockBadge') : `${item.stock} ${t('unitPcs')}`}
             </strong>
           </div>
         </div>
@@ -287,7 +289,7 @@ export function ItemCard({ item, onInspect, onEdit, isCuratorMode }) {
             style={{ width: '100%' }}
           >
             <Eye size={13} />
-            <span>DETAIL</span>
+            <span>{t('inspectBtn')}</span>
           </button>
 
           <button
@@ -304,7 +306,7 @@ export function ItemCard({ item, onInspect, onEdit, isCuratorMode }) {
             }}
           >
             <ShoppingCart size={13} />
-            <span>{!isStoreOpen ? 'TUTUP' : isOutOfStock ? 'HABIS' : 'BELI'}</span>
+            <span>{!isStoreOpen ? t('closedBtn') : isOutOfStock ? t('outOfStockBadge') : t('buyBtn')}</span>
           </button>
         </div>
 

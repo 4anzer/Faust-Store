@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { CatalogProvider } from './context/CatalogContext';
 import { AuthProvider } from './context/AuthContext';
+import { LanguageProvider } from './context/LanguageContext';
 import { StorePage } from './pages/StorePage';
 import { AdminLoginPage } from './pages/AdminLoginPage';
 import { AdminDashboardPage } from './pages/AdminDashboardPage';
@@ -11,7 +12,8 @@ export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <CatalogProvider>
+        <LanguageProvider>
+          <CatalogProvider>
           <Routes>
             {/* Public Customer Store Page (Guest - No Account/Register required) */}
             <Route path="/" element={<StorePage />} />
@@ -39,6 +41,7 @@ export default function App() {
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </CatalogProvider>
+        </LanguageProvider>
       </AuthProvider>
     </BrowserRouter>
   );

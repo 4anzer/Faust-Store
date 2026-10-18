@@ -1,17 +1,20 @@
 import React from 'react';
 import { useCatalog } from '../context/CatalogContext';
+import { useLanguage } from '../context/LanguageContext';
 import { Radio, Send, MessageSquare, CheckCircle2, AlertOctagon } from 'lucide-react';
 
 export function Banner() {
   const { merchantProfile, items, isStoreOpen } = useCatalog();
+  const { language, t } = useLanguage();
   const inStockCount = items.filter(i => i.stock > 0).length;
 
   return (
     <section style={{
       background: 'linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-primary) 100%)',
       borderBottom: '1px solid var(--border-color)',
-      padding: '20px 20px',
-      position: 'relative'
+      padding: '18px 20px',
+      position: 'relative',
+      zIndex: 1
     }}>
       <div style={{ maxWidth: '1350px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
         
@@ -36,16 +39,15 @@ export function Banner() {
               boxShadow: isStoreOpen ? '0 0 10px #10b981' : '0 0 10px #ff2a44'
             }} />
             <span style={{ color: 'var(--text-main)', fontWeight: 700 }}>
-              STATUS TOKO:{' '}
               {isStoreOpen ? (
-                <span style={{ color: '#10b981' }}>BUKA & FAST RESPONSE</span>
+                <span style={{ color: '#10b981' }}>{t('storeStatusOpen')}</span>
               ) : (
-                <span style={{ color: '#ff2a44', fontWeight: 800 }}>TUTUP SEMENTARA</span>
+                <span style={{ color: '#ff2a44', fontWeight: 800 }}>{t('storeStatusClosed')}</span>
               )}
             </span>
             <span style={{ color: 'var(--border-color)' }}>•</span>
             <span style={{ color: 'var(--text-muted)' }}>
-              Tanpa Registrasi Akun
+              {language === 'en' ? "Guest Direct Checkout" : "Tanpa Registrasi Akun"}
             </span>
           </div>
 
@@ -54,7 +56,7 @@ export function Banner() {
               TOTAL ITEM: <strong style={{ color: 'var(--text-main)' }}>{items.length}</strong>
             </span>
             <span>
-              SIAP KIRIM: <strong style={{ color: '#10b981' }}>{inStockCount}</strong>
+              {language === 'en' ? "IN STOCK:" : "SIAP KIRIM:"} <strong style={{ color: '#10b981' }}>{inStockCount}</strong>
             </span>
           </div>
         </div>
@@ -74,7 +76,9 @@ export function Banner() {
           }}>
             <AlertOctagon size={18} style={{ flexShrink: 0 }} />
             <span style={{ fontSize: '0.84rem', fontFamily: 'var(--font-mono)' }}>
-              <strong>PEMBERITAHUAN:</strong> Toko saat ini sedang <strong>TUTUP</strong>. Kamu tetap dapat melihat katalog dan spesifikasi item, namun pemesanan sementara tidak dapat dilakukan.
+              <strong>{language === 'en' ? "NOTICE:" : "PEMBERITAHUAN:"}</strong> {language === 'en' 
+                ? "The store is currently CLOSED. You can still inspect catalog specs, but order submissions are temporarily paused." 
+                : "Toko saat ini sedang TUTUP. Kamu tetap dapat melihat katalog dan spesifikasi item, namun pemesanan sementara tidak dapat dilakukan."}
             </span>
           </div>
         )}
@@ -103,10 +107,10 @@ export function Banner() {
                 fontWeight: 700,
                 marginRight: '8px'
               }}>
-                [PENGUMUMAN]:
+                [{language === 'en' ? "BROADCAST" : "PENGUMUMAN"}]:
               </span>
               <span style={{ fontSize: '0.88rem', color: 'var(--text-main)' }}>
-                {merchantProfile.announcement || "Pemesanan instan 24 jam. Barang dikirim cepat setelah konfirmasi pembayaran."}
+                {merchantProfile.announcement || t('defaultAnnouncement')}
               </span>
             </div>
           </div>
@@ -154,7 +158,9 @@ export function Banner() {
           color: 'var(--text-muted)',
           fontFamily: 'var(--font-mono)'
         }}>
-          <span style={{ color: 'var(--accent-secondary)' }}>PEMBAYARAN TERSEDIA:</span>
+          <span style={{ color: 'var(--accent-secondary)' }}>
+            {language === 'en' ? "ACCEPTED PAYMENTS:" : "PEMBAYARAN TERSEDIA:"}
+          </span>
           {merchantProfile.paymentMethods?.map((pay, i) => (
             <span key={i} style={{
               background: 'var(--bg-tertiary)',
@@ -168,7 +174,7 @@ export function Banner() {
             </span>
           ))}
           <span style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '4px', color: '#10b981' }}>
-            <CheckCircle2 size={14} /> 100% AMAN & BERGARANSI
+            <CheckCircle2 size={14} /> {language === 'en' ? "100% SECURE & VERIFIED" : "100% AMAN & BERGARANSI"}
           </span>
         </div>
 

@@ -1,14 +1,16 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCatalog } from '../context/CatalogContext';
+import { useLanguage } from '../context/LanguageContext';
+import { AmbientBgmPlayer } from './AmbientBgmPlayer';
 import { 
   ShoppingCart, 
   Volume2, 
   VolumeX,
-  Sparkles
+  Globe
 } from 'lucide-react';
 
-export function Header({ onOpenCart, onReplayIntro }) {
+export function Header({ onOpenCart }) {
   const { 
     merchantProfile, 
     cart, 
@@ -17,6 +19,7 @@ export function Header({ onOpenCart, onReplayIntro }) {
     playSound 
   } = useCatalog();
 
+  const { language, toggleLanguage, t } = useLanguage();
   const navigate = useNavigate();
 
   const totalCartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
@@ -31,59 +34,63 @@ export function Header({ onOpenCart, onReplayIntro }) {
       backdropFilter: 'blur(10px)',
       boxShadow: '0 4px 20px rgba(0,0,0,0.6)'
     }}>
-      {/* Top Hazard Caution Stripe */}
+      {/* Top Hazard Caution Stripe with pulse glow */}
       <div className="hazard-stripe" style={{ height: '3px', width: '100%' }} />
 
       <div style={{
         maxWidth: '1350px',
         margin: '0 auto',
-        padding: '12px 20px',
+        padding: '10px 20px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
         flexWrap: 'wrap',
         gap: '12px'
       }}>
-        {/* Brand / Logo */}
+        {/* Brand / Logo (Enlarged for high visibility) */}
         <div 
-          style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}
+          style={{ display: 'flex', alignItems: 'center', gap: '14px', cursor: 'pointer' }}
           onClick={() => { playSound('glitch'); navigate('/'); }}
         >
+          {/* Bigger Logo Container */}
           <div style={{
             position: 'relative',
-            width: '44px',
-            height: '44px',
-            borderRadius: '8px',
+            width: '60px',
+            height: '60px',
+            borderRadius: '10px',
             overflow: 'hidden',
-            border: '2px solid var(--accent-primary)',
+            border: '2.5px solid var(--accent-primary)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 0 14px var(--accent-glow)',
+            boxShadow: '0 0 18px var(--accent-glow), inset 0 0 10px rgba(0,0,0,0.8)',
             background: '#000',
-            flexShrink: 0
+            flexShrink: 0,
+            transition: 'transform 0.2s ease, box-shadow 0.2s ease'
           }}>
             <img 
               src="/logo.png" 
               alt="Faust Store Logo" 
               style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
             />
+            {/* Live Online Badge */}
             <div style={{
               position: 'absolute',
-              bottom: '2px',
-              right: '2px',
-              width: '9px',
-              height: '9px',
+              bottom: '3px',
+              right: '3px',
+              width: '10px',
+              height: '10px',
               borderRadius: '50%',
               background: '#10b981',
-              border: '1.5px solid #000'
-            }} title="Online" />
+              border: '2px solid #000',
+              boxShadow: '0 0 6px #10b981'
+            }} title={t('onlineStatus')} />
           </div>
 
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <span className="serif-title" style={{
-                fontSize: '1.3rem',
+                fontSize: '1.42rem',
                 fontWeight: 900,
                 color: 'var(--text-main)',
                 letterSpacing: '0.04em'
@@ -94,49 +101,66 @@ export function Header({ onOpenCart, onReplayIntro }) {
                 background: 'rgba(255, 42, 68, 0.15)',
                 color: 'var(--accent-primary)',
                 border: '1px solid var(--accent-primary)',
-                fontSize: '0.68rem'
+                fontSize: '0.68rem',
+                fontWeight: 800
               }}>
-                OFFICIAL
+                {t('officialBadge')}
               </span>
             </div>
             <p className="mono" style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>
-              {merchantProfile.subtitle || "Toko Item & Jasa In-Game Terpercaya"}
+              {merchantProfile.subtitle || (language === 'en' ? "Trusted In-Game Item & Service Shop" : "Toko Item & Jasa In-Game Terpercaya")}
             </p>
           </div>
         </div>
 
         {/* Action Controls */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
           
-          {/* Replay Proelium Intro Loading Screen */}
-          {onReplayIntro && (
-            <button
-              onClick={() => {
-                playSound('glitch');
-                onReplayIntro();
-              }}
-              className="btn btn-sm"
-              title="Putar Ulang Intro Loading Screen Proelium Fatale"
-              style={{
-                padding: '7px 11px',
-                borderColor: 'rgba(255, 42, 68, 0.45)',
-                background: 'rgba(255, 42, 68, 0.12)',
-                color: 'var(--accent-primary)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '5px'
-              }}
-            >
-              <Sparkles size={14} />
-              <span className="mono" style={{ fontSize: '0.72rem', fontWeight: 700 }}>INTRO</span>
-            </button>
-          )}
+          {/* Ambient BGM Audio Player (SCP Sector 17) */}
+          <AmbientBgmPlayer />
+
+          {/* Bilingual Language Switcher (ID / EN) */}
+          <button
+            onClick={() => {
+              playSound('click');
+              toggleLanguage();
+            }}
+            className="btn btn-sm"
+            style={{
+              padding: '6px 11px',
+              fontFamily: 'var(--font-mono)',
+              fontSize: '0.75rem',
+              fontWeight: 800,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              borderColor: 'var(--border-color)',
+              background: 'var(--bg-secondary)',
+              cursor: 'pointer'
+            }}
+            title="Ubah Bahasa / Switch Language"
+          >
+            <Globe size={14} color="var(--accent-primary)" />
+            <span style={{ 
+              color: language === 'id' ? '#ff2a44' : 'var(--text-muted)',
+              textDecoration: language === 'id' ? 'underline' : 'none'
+            }}>
+              ID
+            </span>
+            <span style={{ color: 'var(--border-color)', margin: '0 1px' }}>|</span>
+            <span style={{ 
+              color: language === 'en' ? '#f5c518' : 'var(--text-muted)',
+              textDecoration: language === 'en' ? 'underline' : 'none'
+            }}>
+              EN
+            </span>
+          </button>
 
           {/* Sound FX Toggle */}
           <button
             onClick={toggleSound}
             className="btn btn-sm"
-            title={soundEnabled ? "Mute Suara Efek" : "Aktifkan Suara Efek"}
+            title={soundEnabled ? t('soundMute') : t('soundUnmute')}
             style={{
               padding: '7px 10px',
               color: soundEnabled ? 'var(--accent-primary)' : 'var(--text-muted)'
@@ -155,7 +179,7 @@ export function Header({ onOpenCart, onReplayIntro }) {
             style={{ position: 'relative', padding: '7px 16px' }}
           >
             <ShoppingCart size={16} />
-            <span>KERANJANG</span>
+            <span>{t('cartButton')}</span>
             {totalCartCount > 0 && (
               <span style={{
                 position: 'absolute',

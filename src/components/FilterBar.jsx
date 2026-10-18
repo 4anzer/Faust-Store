@@ -1,5 +1,6 @@
 import React from 'react';
 import { useCatalog } from '../context/CatalogContext';
+import { useLanguage } from '../context/LanguageContext';
 import { Search, ArrowUpDown, X } from 'lucide-react';
 
 export function FilterBar({
@@ -14,6 +15,7 @@ export function FilterBar({
   filteredCount
 }) {
   const { games, playSound } = useCatalog();
+  const { language, t } = useLanguage();
 
   const handleGameSelect = (g) => {
     playSound('click');
@@ -41,7 +43,9 @@ export function FilterBar({
       padding: '0 20px',
       display: 'flex',
       flexDirection: 'column',
-      gap: '14px'
+      gap: '14px',
+      position: 'relative',
+      zIndex: 2
     }}>
       {/* Category Pills / Game Tabs */}
       <div style={{
@@ -63,7 +67,7 @@ export function FilterBar({
             whiteSpace: 'nowrap'
           }}
         >
-          🎮 SEMUA GAME ({filteredCount})
+          🎮 {t('allGames')} ({filteredCount})
         </button>
 
         {games.map((g) => {
@@ -108,7 +112,7 @@ export function FilterBar({
             className="input"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Cari nama item, senjata, akun, atau layanan..."
+            placeholder={t('searchPlaceholder')}
             style={{ paddingLeft: '36px' }}
           />
           {searchQuery && (
@@ -144,11 +148,11 @@ export function FilterBar({
               }}
               style={{ width: 'auto', minWidth: '160px', padding: '8px 12px' }}
             >
-              <option value="featured">Rekomendasi / Populer</option>
-              <option value="price-asc">Harga: Termurah</option>
-              <option value="price-desc">Harga: Tertinggi</option>
-              <option value="stock">Stok Terbanyak</option>
-              <option value="name">Nama Item (A-Z)</option>
+              <option value="featured">{t('sortFeatured')}</option>
+              <option value="price-asc">{t('sortPriceAsc')}</option>
+              <option value="price-desc">{t('sortPriceDesc')}</option>
+              <option value="stock">{t('sortStock')}</option>
+              <option value="name">{t('sortName')}</option>
             </select>
           </div>
 
@@ -175,14 +179,14 @@ export function FilterBar({
               }}
               style={{ accentColor: 'var(--accent-primary)', cursor: 'pointer' }}
             />
-            <span>HANYA STOK READY</span>
+            <span>{t('inStockOnly').toUpperCase()}</span>
           </label>
 
           {hasActiveFilters && (
             <button
               onClick={handleResetFilters}
               className="btn btn-sm btn-danger"
-              title="Reset pencarian"
+              title="Reset"
             >
               <X size={13} />
               <span>RESET</span>

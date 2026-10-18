@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useCatalog } from '../context/CatalogContext';
+import { useLanguage } from '../context/LanguageContext';
 import { THREAT_LEVELS } from '../data/defaultData';
 import { createDirectItemWhatsAppUrl } from '../utils/whatsappHelper';
 import { 
@@ -12,6 +13,7 @@ import {
 
 export function ItemModal({ item, onClose, onOpenCart }) {
   const { merchantProfile, addToCart, playSound, isStoreOpen } = useCatalog();
+  const { language, t } = useLanguage();
 
   if (!item) return null;
 
@@ -290,10 +292,10 @@ export function ItemModal({ item, onClose, onOpenCart }) {
               <Truck size={18} color="#10b981" style={{ flexShrink: 0, marginTop: '2px' }} />
               <div>
                 <span className="mono" style={{ fontSize: '0.74rem', color: '#10b981', fontWeight: 700 }}>
-                  CARA PENGIRIMAN:
+                  {t('deliveryMethodTitle')}
                 </span>
                 <p style={{ fontSize: '0.8rem', color: 'var(--text-main)', marginTop: '2px' }}>
-                  {item.deliveryMethod || "Pengiriman via chat langsung setelah pembayaran diverifikasi."}
+                  {item.deliveryMethod || (language === 'en' ? "Direct chat delivery upon payment confirmation." : "Pengiriman via chat langsung setelah pembayaran diverifikasi.")}
                 </p>
               </div>
             </div>
@@ -319,7 +321,7 @@ export function ItemModal({ item, onClose, onOpenCart }) {
                 }}
               >
                 <ShoppingCart size={15} />
-                <span>{!isStoreOpen ? 'TOKO TUTUP' : '+ KERANJANG'}</span>
+                <span>{!isStoreOpen ? t('closedBtn') : `+ ${t('cartButton')}`}</span>
               </button>
 
               <button
@@ -335,7 +337,7 @@ export function ItemModal({ item, onClose, onOpenCart }) {
                 }}
               >
                 <Send size={15} />
-                <span>{!isStoreOpen ? 'TOKO SEDANG TUTUP' : 'BELI VIA WHATSAPP'}</span>
+                <span>{!isStoreOpen ? t('closedBtn') : (language === 'en' ? "BUY VIA WHATSAPP" : "BELI VIA WHATSAPP")}</span>
               </button>
             </div>
 
