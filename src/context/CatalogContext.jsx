@@ -8,7 +8,7 @@ const CatalogContext = createContext(null);
 const STORAGE_KEYS = {
   ITEMS: 'faust_store_items_v4',
   GAMES: 'faust_store_games_v4',
-  PROFILE: 'faust_store_profile_v3',
+  PROFILE: 'faust_store_profile_v4',
   CART: 'faust_store_cart_v3',
   ORDERS: 'faust_store_orders_v3',
   REVIEWS: 'faust_store_reviews_v4',

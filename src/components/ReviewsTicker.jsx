@@ -27,6 +27,7 @@ export function ReviewsTicker() {
     <section style={{
       margin: '40px auto 10px auto',
       width: '100%',
+      maxWidth: '100vw',
       position: 'relative',
       zIndex: 2,
       overflow: 'hidden'
@@ -74,8 +75,10 @@ export function ReviewsTicker() {
       <div style={{
         position: 'relative',
         width: '100%',
+        maxWidth: '100%',
         overflow: 'hidden',
-        padding: '6px 0'
+        padding: '6px 0',
+        boxSizing: 'border-box'
       }}>
         <div style={{
           position: 'absolute',

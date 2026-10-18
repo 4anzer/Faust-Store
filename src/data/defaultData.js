@@ -285,7 +285,7 @@ export const DEFAULT_ITEMS = [
 
 export const DEFAULT_MERCHANT_PROFILE = {
   shopName: "Faust Store",
-  subtitle: "Roblox & In-Game Item Shop Terpercaya",
+  subtitle: "Trusted Roblox, Steam & In-Game Item Shop",
   sellerTag: "VERIFIED MERCHANT",
   logoUrl: "/logo.png",
   whatsapp: "6281234567890",
@@ -293,7 +293,7 @@ export const DEFAULT_MERCHANT_PROFILE = {
   discordWebhook: "https://discord.com/api/webhooks/1561067399795445852/2REoJTHuzuERa_GSwx6mDBsK9U79nBCshe9p1bkhNvz03DFDKfuxhh0UChCJR-HW105q",
   telegram: "@FaustStore",
   paymentMethods: ["QRIS", "BCA", "DANA", "GoPay", "ShopeePay", "Steam Wallet"],
-  announcement: "📢 Selamat datang di Faust Store! Pemesanan langsung tanpa perlu buat akun. Notifikasi terhubung ke Discord & WhatsApp.",
+  announcement: "📢 Welcome to Faust Store! Instant guest checkout without creating an account. Direct Discord & WhatsApp dispatch.",
   currencySymbol: "Rp",
   isOpen: true
 };

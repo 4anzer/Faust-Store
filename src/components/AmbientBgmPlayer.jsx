@@ -55,7 +55,6 @@ export function AmbientBgmPlayer() {
       audioRef.current.play()
         .then(() => {
           setIsPlaying(true);
-          setHasStartedOnce(true);
         })
         .catch((err) => {
           console.warn("Audio playback blocked", err);

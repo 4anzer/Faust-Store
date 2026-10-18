@@ -29,7 +29,7 @@ export function Banner() {
           fontSize: '0.8rem',
           fontFamily: 'var(--font-mono)'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
             <span style={{
               display: 'inline-block',
               width: '9px',
@@ -51,7 +51,7 @@ export function Banner() {
             </span>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', color: 'var(--text-muted)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', color: 'var(--text-muted)', flexWrap: 'wrap' }}>
             <span>
               TOTAL ITEMS: <strong style={{ color: 'var(--text-main)' }}>{items.length}</strong>
             </span>
@@ -96,9 +96,9 @@ export function Banner() {
           flexWrap: 'wrap',
           gap: '12px'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: '1 1 260px' }}>
             <Radio size={18} color={isStoreOpen ? "var(--accent-primary)" : "#ff2a44"} style={{ flexShrink: 0 }} />
-            <div>
+            <div style={{ wordBreak: 'break-word' }}>
               <span className="mono" style={{
                 fontSize: '0.74rem',
                 color: isStoreOpen ? 'var(--accent-primary)' : '#ff2a44',

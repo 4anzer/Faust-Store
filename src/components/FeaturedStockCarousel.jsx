@@ -250,15 +250,15 @@ export function FeaturedStockCarousel({ onInspect }) {
         <div style={{
           position: 'relative',
           zIndex: 5,
-          padding: '16px 24px',
+          padding: '14px 52px',
           display: 'flex',
           alignItems: 'flex-end',
           justifyContent: 'space-between',
           flexWrap: 'wrap',
-          gap: '16px'
+          gap: '12px'
         }}>
           {/* Item Details: Tag, Title & Subtitle */}
-          <div style={{ maxWidth: '650px' }}>
+          <div style={{ maxWidth: '650px', flex: '1 1 240px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
               <span style={{
                 background: 'rgba(16, 185, 129, 0.2)',
@@ -289,13 +289,14 @@ export function FeaturedStockCarousel({ onInspect }) {
             </div>
 
             <h2 className="serif-title" style={{
-              fontSize: '1.6rem',
+              fontSize: 'clamp(1.05rem, 3.8vw, 1.55rem)',
               fontWeight: 900,
               color: '#f5c518',
               letterSpacing: '0.03em',
               textShadow: '0 0 16px rgba(245, 197, 24, 0.5), 0 2px 4px rgba(0,0,0,0.8)',
               margin: 0,
-              lineHeight: 1.2
+              lineHeight: 1.25,
+              wordBreak: 'break-word'
             }}>
               {currentItem.name?.toUpperCase()}
             </h2>
