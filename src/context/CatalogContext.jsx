@@ -149,6 +149,7 @@ export function CatalogProvider({ children }) {
     if (type === 'hazard') soundEffects.playHazard();
     if (type === 'equip') soundEffects.playEquip();
     if (type === 'glitch') soundEffects.playGlitch();
+    if (type === 'proelium') soundEffects.playProeliumIntro();
   };
 
   const toggleSound = () => {
@@ -207,10 +208,26 @@ export function CatalogProvider({ children }) {
       ...orderPayload,
       id: `ORD-${Math.floor(100000 + Math.random() * 900000)}`,
       status: 'Pending',
+      stockDeducted: true,
       createdAt: new Date().toISOString()
     };
 
-    // Save to orders state
+    // 1. Deduct stock IMMEDIATELY when the customer places an order
+    setItems((prevItems) =>
+      prevItems.map((item) => {
+        const purchasedItem = orderPayload.items?.find(
+          (it) => it.id === item.id || it.name?.trim().toLowerCase() === item.name?.trim().toLowerCase()
+        );
+        if (purchasedItem) {
+          const currentStock = typeof item.stock === 'number' ? item.stock : 0;
+          const newStock = Math.max(0, currentStock - (purchasedItem.quantity || 1));
+          return { ...item, stock: newStock };
+        }
+        return item;
+      })
+    );
+
+    // 2. Save to orders state
     setOrders((prev) => [newOrder, ...prev]);
     clearCart();
     playSound('equip');
@@ -253,32 +270,31 @@ export function CatalogProvider({ children }) {
     const targetOrder = orders.find((o) => o.id === orderId);
     if (!targetOrder) return;
 
-    // 1. If transitioning to 'Selesai' and stock hasn't been deducted yet:
-    if (status === 'Selesai' && !targetOrder.stockDeducted) {
+    // If order was cancelled ('Dibatalkan') by admin and had stock deducted, restore the stock:
+    if (status === 'Dibatalkan' && targetOrder.status !== 'Dibatalkan' && targetOrder.stockDeducted) {
       setItems((prevItems) =>
         prevItems.map((item) => {
-          const purchasedItem = targetOrder.items.find(
-            (it) => it.id === item.id || it.name.trim().toLowerCase() === item.name.trim().toLowerCase()
+          const purchasedItem = targetOrder.items?.find(
+            (it) => it.id === item.id || it.name?.trim().toLowerCase() === item.name?.trim().toLowerCase()
           );
           if (purchasedItem) {
             const currentStock = typeof item.stock === 'number' ? item.stock : 0;
-            const newStock = Math.max(0, currentStock - purchasedItem.quantity);
-            return { ...item, stock: newStock };
+            return { ...item, stock: currentStock + (purchasedItem.quantity || 1) };
           }
           return item;
         })
       );
     }
-    // 2. If status was 'Selesai' (already deducted) and admin reverts it back to 'Pending' / 'Dibatalkan':
-    else if (status !== 'Selesai' && targetOrder.status === 'Selesai' && targetOrder.stockDeducted) {
+    // If order is uncancelled back to Pending / Selesai from Dibatalkan:
+    else if (status !== 'Dibatalkan' && targetOrder.status === 'Dibatalkan' && targetOrder.stockDeducted) {
       setItems((prevItems) =>
         prevItems.map((item) => {
-          const purchasedItem = targetOrder.items.find(
-            (it) => it.id === item.id || it.name.trim().toLowerCase() === item.name.trim().toLowerCase()
+          const purchasedItem = targetOrder.items?.find(
+            (it) => it.id === item.id || it.name?.trim().toLowerCase() === item.name?.trim().toLowerCase()
           );
           if (purchasedItem) {
             const currentStock = typeof item.stock === 'number' ? item.stock : 0;
-            return { ...item, stock: currentStock + purchasedItem.quantity };
+            return { ...item, stock: Math.max(0, currentStock - (purchasedItem.quantity || 1)) };
           }
           return item;
         })
@@ -291,8 +307,7 @@ export function CatalogProvider({ children }) {
         if (ord.id === orderId) {
           return {
             ...ord,
-            status,
-            stockDeducted: status === 'Selesai'
+            status
           };
         }
         return ord;

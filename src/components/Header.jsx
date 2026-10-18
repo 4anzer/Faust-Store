@@ -4,10 +4,11 @@ import { useCatalog } from '../context/CatalogContext';
 import { 
   ShoppingCart, 
   Volume2, 
-  VolumeX 
+  VolumeX,
+  Sparkles
 } from 'lucide-react';
 
-export function Header({ onOpenCart }) {
+export function Header({ onOpenCart, onReplayIntro }) {
   const { 
     merchantProfile, 
     cart, 
@@ -107,6 +108,30 @@ export function Header({ onOpenCart }) {
         {/* Action Controls */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           
+          {/* Replay Proelium Intro Loading Screen */}
+          {onReplayIntro && (
+            <button
+              onClick={() => {
+                playSound('glitch');
+                onReplayIntro();
+              }}
+              className="btn btn-sm"
+              title="Putar Ulang Intro Loading Screen Proelium Fatale"
+              style={{
+                padding: '7px 11px',
+                borderColor: 'rgba(255, 42, 68, 0.45)',
+                background: 'rgba(255, 42, 68, 0.12)',
+                color: 'var(--accent-primary)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '5px'
+              }}
+            >
+              <Sparkles size={14} />
+              <span className="mono" style={{ fontSize: '0.72rem', fontWeight: 700 }}>INTRO</span>
+            </button>
+          )}
+
           {/* Sound FX Toggle */}
           <button
             onClick={toggleSound}

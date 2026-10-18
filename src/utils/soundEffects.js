@@ -164,6 +164,64 @@ class SoundSystem {
     }
   }
 
+  // Dramatic cinematic audio for "Proelium Fatale" loading screen intro
+  playProeliumIntro() {
+    if (!this.enabled) return;
+    try {
+      this.init();
+      if (!this.ctx) return;
+      const now = this.ctx.currentTime;
+
+      // 1. Heavy Sub-Bass Boom
+      const subOsc = this.ctx.createOscillator();
+      const subGain = this.ctx.createGain();
+      subOsc.type = 'sine';
+      subOsc.frequency.setValueAtTime(85, now);
+      subOsc.frequency.exponentialRampToValueAtTime(32, now + 1.2);
+      subGain.gain.setValueAtTime(0.25, now);
+      subGain.gain.exponentialRampToValueAtTime(0.001, now + 2.0);
+      subOsc.connect(subGain);
+      subGain.connect(this.ctx.destination);
+      subOsc.start(now);
+      subOsc.stop(now + 2.0);
+
+      // 2. Metallic Gong / Bell Resonance (Limbus Company Bell)
+      [196, 330, 440, 784].forEach((freq, idx) => {
+        const bellOsc = this.ctx.createOscillator();
+        const bellGain = this.ctx.createGain();
+        bellOsc.type = idx % 2 === 0 ? 'triangle' : 'sine';
+        bellOsc.frequency.setValueAtTime(freq, now);
+        bellGain.gain.setValueAtTime(0.06 / (idx + 1), now);
+        bellGain.gain.exponentialRampToValueAtTime(0.0005, now + 1.8);
+        bellOsc.connect(bellGain);
+        bellGain.connect(this.ctx.destination);
+        bellOsc.start(now);
+        bellOsc.stop(now + 1.8);
+      });
+
+      // 3. Tension Drone / Filtered Saw Sweep
+      const droneOsc = this.ctx.createOscillator();
+      const droneFilter = this.ctx.createBiquadFilter();
+      const droneGain = this.ctx.createGain();
+      droneOsc.type = 'sawtooth';
+      droneOsc.frequency.setValueAtTime(65.4, now); // C2 note
+      droneFilter.type = 'lowpass';
+      droneFilter.frequency.setValueAtTime(150, now);
+      droneFilter.frequency.exponentialRampToValueAtTime(600, now + 0.8);
+      droneFilter.frequency.exponentialRampToValueAtTime(100, now + 2.2);
+      droneGain.gain.setValueAtTime(0.08, now);
+      droneGain.gain.exponentialRampToValueAtTime(0.001, now + 2.2);
+      droneOsc.connect(droneFilter);
+      droneFilter.connect(droneGain);
+      droneGain.connect(this.ctx.destination);
+      droneOsc.start(now);
+      droneOsc.stop(now + 2.2);
+
+    } catch {
+      // Audio not permitted
+    }
+  }
+
   toggle() {
     this.enabled = !this.enabled;
     return this.enabled;

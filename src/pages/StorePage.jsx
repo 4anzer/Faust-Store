@@ -9,11 +9,31 @@ import { ItemCard } from '../components/ItemCard';
 import { ItemModal } from '../components/ItemModal';
 import { CartModal } from '../components/CartModal';
 import { Footer } from '../components/Footer';
+import { ProeliumLoadingScreen } from '../components/ProeliumLoadingScreen';
 import { PackageX, Plus } from 'lucide-react';
 
 export function StorePage() {
   const { items, playSound } = useCatalog();
   const { isAuthenticated } = useAuth();
+
+  // Proelium Fatale Loading Screen Intro State (plays when visitor enters the store)
+  const [showIntro, setShowIntro] = useState(() => {
+    try {
+      const seen = sessionStorage.getItem('faust_proelium_seen');
+      return !seen;
+    } catch {
+      return true;
+    }
+  });
+
+  const handleFinishIntro = () => {
+    try {
+      sessionStorage.setItem('faust_proelium_seen', 'true');
+    } catch {
+      // ignore
+    }
+    setShowIntro(false);
+  };
 
   // Filters
   const [selectedGame, setSelectedGame] = useState('ALL');
@@ -67,9 +87,15 @@ export function StorePage() {
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       
+      {/* Proelium Fatale Loading Screen Intro */}
+      {showIntro && (
+        <ProeliumLoadingScreen onFinish={handleFinishIntro} />
+      )}
+
       {/* Header */}
       <Header
         onOpenCart={() => setIsCartOpen(true)}
+        onReplayIntro={() => setShowIntro(true)}
       />
 
       {/* Broadcast Banner */}
